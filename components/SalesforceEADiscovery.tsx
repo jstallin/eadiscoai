@@ -10,6 +10,13 @@ interface Notification {
   type: 'success' | 'error';
 }
 
+interface DriverBox {
+  text: string;
+  lines: string[];
+  width: number;
+  height: number;
+}
+
 interface Engagement {
   id: string;
   created_at: string;
@@ -81,33 +88,38 @@ export default function SalesforceEADiscovery() {
     }
   }
 
-  const handleImportComplete = (extractedData: any) => {
-  // Auto-fill all discovery fields with extracted data
-  setDiscoveryData({
-    companyName: extractedData.companyName || '',
-    industry: extractedData.industry || '',
-    businessContext: extractedData.businessContext || '',
-    currentChallenges: extractedData.currentChallenges || '',
-    strategicGoals: extractedData.strategicGoals || '',
-    technicalLandscape: extractedData.technicalLandscape || '',
-    constraints: extractedData.constraints || '',
-    timeline: extractedData.timeline || '',
-    budget: extractedData.budget || ''
-  });
+const handleImportComplete = (extractedData: Record<string, string>) => {
+  // Merge new data with existing data instead of overwriting
+  setDiscoveryData(prev => ({
+    companyName: extractedData.companyName || prev.companyName,
+    industry: extractedData.industry || prev.industry,
+    businessContext: combineText(prev.businessContext, extractedData.businessContext),
+    currentChallenges: combineText(prev.currentChallenges, extractedData.currentChallenges),
+    strategicGoals: combineText(prev.strategicGoals, extractedData.strategicGoals),
+    technicalLandscape: combineText(prev.technicalLandscape, extractedData.technicalLandscape),
+    constraints: combineText(prev.constraints, extractedData.constraints),
+    timeline: extractedData.timeline || prev.timeline,
+    budget: extractedData.budget || prev.budget
+  }));
   
   setShowImport(false);
-  showNotification('Discovery data imported successfully! Review and edit as needed.', 'success');
+  showNotification('Discovery data imported and merged successfully! Review and edit as needed.', 'success');
 };
-  /*const saveToStorage = (updated) => {
-    try {
-      localStorage.setItem('ea_engagements', JSON.stringify(updated));
-      setEngagements(updated);
-    } catch (error) {
-      console.error('Error saving engagements:', error);
-      showNotification('Failed to save engagement', 'error');
-    }
-  };*/
 
+// Helper function to intelligently combine text fields
+const combineText = (existing: string, newText: string): string => {
+  if (!existing) return newText || '';
+  if (!newText) return existing;
+  
+  // If new text is very similar to existing, don't duplicate
+  if (existing.toLowerCase().includes(newText.toLowerCase().substring(0, 50))) {
+    return existing;
+  }
+  
+  // Combine with a separator
+  return `${existing}\n\n${newText}`;
+};
+ 
   const saveEngagement = async () => {
     const engagement = {
       id: currentEngagementId || crypto.randomUUID(),
@@ -234,13 +246,45 @@ export default function SalesforceEADiscovery() {
     showNotification(`Downloaded ${filename}!`, 'success');
   };
 
-  const generateCapabilityMapSVG = () => {
-    if (!artifacts || !artifacts.capabilityMap) return '';
+const generateCapabilityMapSVG = () => {
+  if (!artifacts || !artifacts.capabilityMap) return '';
+  
+  const capMap = artifacts.capabilityMap;
+  const drivers = capMap.businessDrivers || [];
+  
+  // Helper function to wrap text
+  const wrapText = (text: string, maxChars: number) => {
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
     
-    const capMap = artifacts.capabilityMap;
-    const drivers = capMap.businessDrivers || [];
-    
-    return `<?xml version="1.0" encoding="UTF-8"?>
+    words.forEach(word => {
+      if ((currentLine + word).length <= maxChars) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+  
+  // Calculate driver box dimensions and positions
+  const driverBoxes = drivers.slice(0, 6).map((d: any) => {
+    const text = toString(d);
+    const lines = wrapText(text, 25);
+    const width = Math.max(180, Math.min(280, text.length * 8));
+    const height = Math.max(60, 25 + (lines.length * 18));
+    return { text, lines, width, height };
+  });
+  
+  // Calculate total width and starting X position to center drivers
+  const spacing = 20;
+  const totalWidth = driverBoxes.reduce((sum: number, box: DriverBox) => sum + box.width, 0) + (spacing * (driverBoxes.length - 1));
+  const startX = (1400 - totalWidth) / 2;
+  
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="1400" height="1000" xmlns="http://www.w3.org/2000/svg">
   <rect width="1400" height="1000" fill="#f8f9fa"/>
   
@@ -254,10 +298,20 @@ export default function SalesforceEADiscovery() {
   <text x="50" y="130" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#0176D3">
     Business Drivers
   </text>
-  ${drivers.slice(0, 6).map((d: any, i: number) => `
-  <rect x="${50 + (i * 220)}" y="145" width="200" height="50" fill="#0176D3" rx="5"/>
-  <text x="${150 + (i * 220)}" y="175" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">${toString(d).substring(0, 30)}</text>
+  
+  ${driverBoxes.map((box: DriverBox, i: number) => {
+    let currentX = startX;
+    for (let j = 0; j < i; j++) {
+      currentX += driverBoxes[j].width + spacing;
+    }
+    
+    return `
+  <rect x="${currentX}" y="145" width="${box.width}" height="${box.height}" fill="#0176D3" rx="5"/>
+  ${box.lines.map((line, lineIdx) => `
+  <text x="${currentX + box.width / 2}" y="${165 + (lineIdx * 18)}" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">${line}</text>
   `).join('')}
+    `;
+  }).join('')}
   
   ${[
     { key: 'sales', title: 'Sales', x: 50, y: 230, color: '#0176D3' },
@@ -273,15 +327,26 @@ export default function SalesforceEADiscovery() {
   <text x="${cat.x + 10}" y="${cat.y + 30}" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="${cat.color}">
     ${cat.title}
   </text>
-  ${caps.map((cap: any, i: number) => `
+  ${caps.map((cap: any, i: number) => {
+    const capText = toString(cap.capability);
+    const capLines = wrapText(capText, 40);
+    const products = (cap.salesforceProducts || []).slice(0, 3).map((p: any) => toString(p)).join(', ');
+    const productLines = wrapText(products, 45);
+    
+    return `
   <rect x="${cat.x + 10}" y="${cat.y + 50 + (i * 60)}" width="380" height="50" fill="white" stroke="${cat.color}" stroke-width="1" rx="4"/>
-  <text x="${cat.x + 20}" y="${cat.y + 70 + (i * 60)}" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#333">
-    ${toString(cap.capability).substring(0, 45)}
-  </text>
-  <text x="${cat.x + 20}" y="${cat.y + 88 + (i * 60)}" font-family="Arial, sans-serif" font-size="10" fill="#666">
-    ${(cap.salesforceProducts || []).slice(0, 3).map((p: any) => toString(p)).join(', ').substring(0, 50)}
+  ${capLines.slice(0, 2).map((line, lineIdx) => `
+  <text x="${cat.x + 20}" y="${cat.y + 68 + (i * 60) + (lineIdx * 14)}" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#333">
+    ${line}
   </text>
   `).join('')}
+  ${productLines.slice(0, 1).map((line, lineIdx) => `
+  <text x="${cat.x + 20}" y="${cat.y + 88 + (i * 60)}" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    ${line}
+  </text>
+  `).join('')}
+  `;
+  }).join('')}
     `;
   }).join('')}
   
@@ -289,7 +354,7 @@ export default function SalesforceEADiscovery() {
     Generated by Salesforce EA Discovery Assistant | ${new Date().toLocaleDateString()}
   </text>
 </svg>`;
-  };
+};
 
   const generatePaceLayerDiagram = (isCurrentState: boolean) => {
     if (!artifacts) return '';

@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+interface ProcessedFile {
+  id: string;
+  name: string;
+  type: string;
+  base64Data: string;
+  success: boolean;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { files } = await request.json();
@@ -8,8 +16,7 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        //"x-api-key": process.env.ANTHROPIC_API_KEY || "",
-        "x-api-key": "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",
+        "x-api-key": process.env.ANTHROPIC_API_KEY || "",
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
@@ -19,7 +26,7 @@ export async function POST(request: NextRequest) {
           {
             role: "user",
             content: [
-              ...files.map((file: any) => ({
+              ...files.map((file: ProcessedFile) => ({
                 type: "document",
                 source: {
                   type: "base64",
@@ -75,10 +82,11 @@ Rules:
 
     return NextResponse.json({ extractedData });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Analysis error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to analyze documents';
     return NextResponse.json(
-      { error: error.message || 'Failed to analyze documents' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

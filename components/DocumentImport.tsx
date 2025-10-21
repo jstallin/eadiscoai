@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, FileText, X, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface DocumentImportProps {
-  onImportComplete: (extractedData: any) => void;
+  onImportComplete: (extractedData: Record<string, string>) => void;
   onCancel: () => void;
 }
 
@@ -107,6 +107,7 @@ const analyzeDocuments = async () => {
             success: true
           };
         } catch (error) {
+          console.error('File processing error:', error);
           setFiles(prev => prev.map(f => 
             f.id === uploadedFile.id 
               ? { ...f, status: 'error', error: 'Failed to process file' } 

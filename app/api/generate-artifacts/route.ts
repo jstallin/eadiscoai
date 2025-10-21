@@ -58,8 +58,7 @@ Return ONLY the JSON object, nothing else.`
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        //'x-api-key': process.env.ANTHROPIC_API_KEY!,
-        'x-api-key': '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',
+        'x-api-key': process.env.ANTHROPIC_API_KEY!,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
@@ -76,15 +75,16 @@ Return ONLY the JSON object, nothing else.`
     }
 
     const data = await response.json()
-    let text = data.content[0].text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const text = data.content[0].text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     const parsed = JSON.parse(text)
 
     return NextResponse.json({ artifacts: parsed })
-  } catch (error: any) {
-    console.error('Generation error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to generate artifacts' },
-      { status: 500 }
-    )
-  }
+} catch (error) {
+  console.error('Generation error:', error);
+  const errorMessage = error instanceof Error ? error.message : 'Failed to generate artifacts';
+  return NextResponse.json(
+    { error: errorMessage },
+    { status: 500 }
+  );
+}
 }

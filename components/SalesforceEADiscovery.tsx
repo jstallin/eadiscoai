@@ -1225,8 +1225,7 @@ const generateMaturityImpactMatrix = () => {
     </button>
     <button onClick={() => setView('home')} className="text-blue-200 hover:text-white">Back</button>
   </div>
-            <button onClick={() => setView('home')} className="text-blue-200 hover:text-white">Back</button>
-          </div>
+  </div>
 
           <div className="bg-white/10 backdrop-blur border border-white/20 rounded-xl p-8 space-y-6">
             <div>

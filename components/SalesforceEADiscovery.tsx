@@ -399,13 +399,23 @@ const generatePaceLayerDiagram = (isCurrentState: boolean) => {
     return lines;
   };
   
-  interface System {
-    name?: string;
-    emergingCapability?: string;
-    futureVision?: string;
-    businessCapability?: string;
-  }
-  
+    interface System {
+      name?: string;
+      vendor?: string;
+      emergingCapability?: string;
+      futureVision?: string;
+      businessCapability?: string;
+      currentIssues?: string;
+      integrationChallenges?: string;
+      userAdoption?: string;
+      dataQuality?: string;
+      salesforceOpportunity?: string;
+      recommendedSalesforceProducts?: string[];
+      maturityLevel?: string;
+      improvements?: string[];
+      benefits?: string[];
+    }
+      
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="1400" height="900" xmlns="http://www.w3.org/2000/svg">
   <rect width="1400" height="900" fill="#f8f9fa"/>
@@ -452,13 +462,25 @@ const generatePaceLayerDiagram = (isCurrentState: boolean) => {
     const detailText = toString(sys.businessCapability || sys.futureVision);
     const detailLines = wrapText(detailText, 32);
     
+    const extraText = isCurrentState 
+      ? toString(sys.currentIssues || '')
+      : toString(sys.improvements || (Array.isArray(sys.benefits) ? sys.benefits[0] : ''));
+    const extraLines = extraText ? wrapText(extraText, 32).slice(0, 2) : [];
+    
+    const baseHeight = 70;
+    const extraHeight = extraLines.length * 12;
+    const boxHeight = baseHeight + extraHeight;
+    
     return `
-  <rect x="${70 + (i % 4) * 320}" y="${435 + Math.floor(i / 4) * 75}" width="300" height="70" fill="#FF9800" stroke="#E65100" stroke-width="2" rx="5"/>
-  ${nameLines.slice(0, 2).map((line: string, idx: number) => `
-  <text x="${80 + (i % 4) * 320}" y="${455 + Math.floor(i / 4) * 75 + (idx * 16)}" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">${line}</text>
+  <rect x="${70 + (i % 4) * 320}" y="${435 + Math.floor(i / 4) * 115}" width="300" height="${boxHeight}" fill="#FF9800" stroke="#E65100" stroke-width="2" rx="5"/>
+  ${nameLines.slice(0, 1).map((line: string, idx: number) => `
+  <text x="${80 + (i % 4) * 320}" y="${455 + Math.floor(i / 4) * 115}" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="white">${line}</text>
   `).join('')}
-  ${detailLines.slice(0, 2).map((line: string, idx: number) => `
-  <text x="${80 + (i % 4) * 320}" y="${480 + Math.floor(i / 4) * 75 + (idx * 13)}" font-family="Arial, sans-serif" font-size="11" fill="#FFF3E0">${line}</text>
+  ${detailLines.slice(0, 1).map((line: string, idx: number) => `
+  <text x="${80 + (i % 4) * 320}" y="${472 + Math.floor(i / 4) * 115}" font-family="Arial, sans-serif" font-size="10" fill="#FFF3E0">${line}</text>
+  `).join('')}
+  ${extraLines.map((line: string, idx: number) => `
+  <text x="${80 + (i % 4) * 320}" y="${490 + Math.floor(i / 4) * 115 + (idx * 11)}" font-family="Arial, sans-serif" font-size="9" fill="${isCurrentState ? '#ffcdd2' : '#a5d6a7'}">${isCurrentState ? '⚠' : '✓'} ${line}</text>
   `).join('')}
   `;
   }).join('')}
@@ -475,13 +497,26 @@ const generatePaceLayerDiagram = (isCurrentState: boolean) => {
     const detailText = toString(sys.businessCapability || sys.futureVision);
     const detailLines = wrapText(detailText, 32);
     
+    // For current state, show issues; for future state, show improvements/benefits
+    const extraText = isCurrentState 
+      ? toString(sys.currentIssues || '')
+      : toString(sys.improvements || (Array.isArray(sys.benefits) ? sys.benefits[0] : ''));
+    const extraLines = extraText ? wrapText(extraText, 32).slice(0, 2) : [];
+    
+    const baseHeight = 70;
+    const extraHeight = extraLines.length * 12;
+    const boxHeight = baseHeight + extraHeight;
+    
     return `
-  <rect x="${70 + (i % 4) * 320}" y="${675 + Math.floor(i / 4) * 75}" width="300" height="70" fill="#2196F3" stroke="#0D47A1" stroke-width="2" rx="5"/>
-  ${nameLines.slice(0, 2).map((line: string, idx: number) => `
-  <text x="${80 + (i % 4) * 320}" y="${695 + Math.floor(i / 4) * 75 + (idx * 16)}" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">${line}</text>
+  <rect x="${70 + (i % 4) * 320}" y="${675 + Math.floor(i / 4) * 115}" width="300" height="${boxHeight}" fill="#2196F3" stroke="#0D47A1" stroke-width="2" rx="5"/>
+  ${nameLines.slice(0, 1).map((line: string, idx: number) => `
+  <text x="${80 + (i % 4) * 320}" y="${695 + Math.floor(i / 4) * 115}" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="white">${line}</text>
   `).join('')}
-  ${detailLines.slice(0, 2).map((line: string, idx: number) => `
-  <text x="${80 + (i % 4) * 320}" y="${720 + Math.floor(i / 4) * 75 + (idx * 13)}" font-family="Arial, sans-serif" font-size="11" fill="#E3F2FD">${line}</text>
+  ${detailLines.slice(0, 1).map((line: string, idx: number) => `
+  <text x="${80 + (i % 4) * 320}" y="${712 + Math.floor(i / 4) * 115}" font-family="Arial, sans-serif" font-size="10" fill="#E3F2FD">${line}</text>
+  `).join('')}
+  ${extraLines.map((line: string, idx: number) => `
+  <text x="${80 + (i % 4) * 320}" y="${730 + Math.floor(i / 4) * 115 + (idx * 11)}" font-family="Arial, sans-serif" font-size="9" fill="${isCurrentState ? '#ffcdd2' : '#a5d6a7'}">${isCurrentState ? '⚠' : '✓'} ${line}</text>
   `).join('')}
   `;
   }).join('')}
@@ -1354,39 +1389,6 @@ className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex it
                 ))}
               </div>
             </div>
-
-            <div className="bg-white/10 p-6 rounded-xl border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-white">Current State</h2>
-                <button 
-                  onClick={() => downloadSVG(generatePaceLayerDiagram(true), `${discoveryData.companyName.replace(/\s+/g, '-')}-current-state.svg`)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center gap-2"
-                >
-                  <Download size={16} />
-                  Download Diagram
-                </button>
-              </div>
-              <p className="text-white mb-6">{toString(currentState.overview, 'Current state analysis')}</p>
-              
-              {Array.isArray(currentState.systemsOfRecord) && currentState.systemsOfRecord.map((sys: any, i: number) => (
-                <div key={i} className="bg-blue-900/30 p-4 rounded-lg mb-3 border border-blue-500/30">
-                  <h4 className="font-bold text-white text-lg mb-2">{toString(sys.name, 'System')}</h4>
-                  <p className="text-blue-200 text-sm mb-2">{toString(sys.businessCapability)}</p>
-                  <div className="bg-green-900/20 p-3 rounded border border-green-500/30 mt-3">
-                    <span className="text-green-300 font-semibold">💡 Salesforce Opportunity: </span>
-                    <span className="text-white">{toString(sys.salesforceOpportunity)}</span>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {Array.isArray(sys.recommendedSalesforceProducts) && sys.recommendedSalesforceProducts.map((p: any, j: number) => (
-                        <span key={j} className="bg-green-700 px-3 py-1 rounded-full text-white text-xs font-semibold">
-                          {toString(p, 'Product')}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
             <div className="bg-white/10 p-6 rounded-xl border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold text-white">Prioritization Matrix</h2>
@@ -1450,62 +1452,341 @@ className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex it
               </div>
             </div>
 
-            <div className="bg-white/10 p-6 rounded-xl border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-white">Future State (Salesforce-Powered)</h2>
-                <button 
-                  onClick={() => downloadSVG(generatePaceLayerDiagram(false), `${discoveryData.companyName.replace(/\s+/g, '-')}-future-state.svg`)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center gap-2"
-                >
-                  <Download size={16} />
-                  Download Diagram
-                </button>
-              </div>
-              <p className="text-white mb-6">{toString(futureState.overview, 'Future state vision')}</p>
-              
-              {futureState.platformComponents && (
-                <div className="mb-6 bg-cyan-900/30 p-5 rounded-lg border border-cyan-500/30">
-                  <h3 className="text-xl font-bold text-cyan-300 mb-3">Platform Components</h3>
-                  <div className="space-y-2 text-sm text-white">
-                    <p><strong className="text-cyan-200">Data:</strong> {toString(futureState.platformComponents?.dataUnification, 'N/A')}</p>
-                    <p><strong className="text-cyan-200">Integration:</strong> {toString(futureState.platformComponents?.integration, 'N/A')}</p>
-                    <p><strong className="text-cyan-200">Analytics:</strong> {toString(futureState.platformComponents?.analytics, 'N/A')}</p>
-                    <p><strong className="text-cyan-200">AI:</strong> {toString(futureState.platformComponents?.aiAutomation, 'N/A')}</p>
-                  </div>
-                </div>
+<div className="bg-white/10 p-6 rounded-xl border border-white/20">
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-2xl font-bold text-white">Current State</h2>
+    <button 
+      onClick={() => downloadSVG(generatePaceLayerDiagram(true), `${discoveryData.companyName.replace(/\s+/g, '-')}-current-state.svg`)}
+      className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center gap-2"
+    >
+      <Download size={16} />
+      Download Diagram
+    </button>
+  </div>
+  <p className="text-white mb-6">{toString(currentState.overview, 'Current state analysis')}</p>
+  
+  {/* Systems of Record - Most detailed */}
+  {Array.isArray(currentState.systemsOfRecord) && currentState.systemsOfRecord.length > 0 && (
+    <div className="mb-6">
+      <h3 className="text-xl font-bold text-blue-300 mb-4">Systems of Record</h3>
+      {currentState.systemsOfRecord.map((sys: any, i: number) => (
+        <div key={i} className="bg-blue-900/30 p-5 rounded-lg mb-4 border border-blue-500/30">
+          <div className="flex justify-between items-start mb-3">
+            <div>
+              <h4 className="font-bold text-white text-xl">{toString(sys.name, 'System')}</h4>
+              {sys.vendor && (
+                <p className="text-blue-200 text-sm mt-1">Vendor: {toString(sys.vendor)}</p>
               )}
-
-              {Array.isArray(futureState.systemsOfRecord) && futureState.systemsOfRecord.map((sys: any, i: number) => (
-                <div key={i} className="bg-blue-900/30 p-4 rounded-lg mb-3 border border-blue-500/30">
-                  <h4 className="font-bold text-white text-lg mb-2">{toString(sys.name, 'System')}</h4>
-                  <p className="text-blue-200 text-sm mb-3">{toString(sys.futureVision || sys.description)}</p>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="text-blue-300 font-semibold">Products:</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {Array.isArray(sys.salesforceProducts) && sys.salesforceProducts.map((p: any, j: number) => (
-                          <span key={j} className="bg-blue-700 px-2 py-1 rounded text-white text-xs">
-                            {toString(p, 'Product')}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-blue-300 font-semibold">Timeline:</span>
-                      <p className="text-white mt-1">{toString(sys.estimatedTimeline || sys.timeline, 'TBD')}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="text-blue-300 font-semibold">Benefits:</span>
-                      <p className="text-white mt-1">
-                        {Array.isArray(sys.benefits) 
-                          ? sys.benefits.map((b: any) => toString(b)).filter(Boolean).join('; ')
-                          : toString(sys.benefits)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+            </div>
+            {sys.maturityLevel && (
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-700 text-white">
+                Maturity: {toString(sys.maturityLevel)}
+              </span>
+            )}
+          </div>
+          
+          <p className="text-blue-200 text-sm mb-3">
+            <strong>Business Capability:</strong> {toString(sys.businessCapability)}
+          </p>
+          
+          {sys.currentIssues && (
+            <div className="bg-red-900/20 p-3 rounded border border-red-500/30 mb-3">
+              <p className="text-red-300 font-semibold mb-1">⚠️ Current Issues:</p>
+              <p className="text-white text-sm">{toString(sys.currentIssues)}</p>
+            </div>
+          )}
+          
+          {sys.integrationChallenges && (
+            <div className="bg-yellow-900/20 p-3 rounded border border-yellow-500/30 mb-3">
+              <p className="text-yellow-300 font-semibold mb-1">🔗 Integration Challenges:</p>
+              <p className="text-white text-sm">{toString(sys.integrationChallenges)}</p>
+            </div>
+          )}
+          
+          {sys.userAdoption && (
+            <div className="bg-orange-900/20 p-3 rounded border border-orange-500/30 mb-3">
+              <p className="text-orange-300 font-semibold mb-1">👥 User Adoption:</p>
+              <p className="text-white text-sm">{toString(sys.userAdoption)}</p>
+            </div>
+          )}
+          
+          {sys.dataQuality && (
+            <div className="bg-purple-900/20 p-3 rounded border border-purple-500/30 mb-3">
+              <p className="text-purple-300 font-semibold mb-1">📊 Data Quality:</p>
+              <p className="text-white text-sm">{toString(sys.dataQuality)}</p>
+            </div>
+          )}
+          
+          <div className="bg-green-900/20 p-4 rounded border border-green-500/30 mt-3">
+            <p className="text-green-300 font-semibold mb-2">💡 Salesforce Opportunity:</p>
+            <p className="text-white mb-3">{toString(sys.salesforceOpportunity)}</p>
+            <div className="flex flex-wrap gap-2">
+              {Array.isArray(sys.recommendedSalesforceProducts) && sys.recommendedSalesforceProducts.map((p: any, j: number) => (
+                <span key={j} className="bg-green-700 px-3 py-1 rounded-full text-white text-xs font-semibold">
+                  {toString(p, 'Product')}
+                </span>
               ))}
             </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+  
+  {/* Systems of Differentiation */}
+  {Array.isArray(currentState.systemsOfDifferentiation) && currentState.systemsOfDifferentiation.length > 0 && (
+    <div className="mb-6">
+      <h3 className="text-xl font-bold text-orange-300 mb-4">Systems of Differentiation</h3>
+      {currentState.systemsOfDifferentiation.map((sys: any, i: number) => (
+        <div key={i} className="bg-orange-900/30 p-5 rounded-lg mb-4 border border-orange-500/30">
+          <h4 className="font-bold text-white text-lg mb-2">{toString(sys.name, 'System')}</h4>
+          <p className="text-orange-200 text-sm mb-3">{toString(sys.businessCapability)}</p>
+          
+          {sys.currentIssues && (
+            <div className="bg-red-900/20 p-3 rounded border border-red-500/30 mb-3">
+              <p className="text-red-300 font-semibold mb-1">⚠️ Issues:</p>
+              <p className="text-white text-sm">{toString(sys.currentIssues)}</p>
+            </div>
+          )}
+          
+          {sys.integrationChallenges && (
+            <div className="bg-yellow-900/20 p-3 rounded border border-yellow-500/30 mb-3">
+              <p className="text-yellow-300 font-semibold mb-1">🔗 Integration:</p>
+              <p className="text-white text-sm">{toString(sys.integrationChallenges)}</p>
+            </div>
+          )}
+          
+          <div className="bg-green-900/20 p-3 rounded border border-green-500/30 mt-3">
+            <p className="text-green-300 font-semibold mb-2">💡 Opportunity:</p>
+            <p className="text-white text-sm">{toString(sys.salesforceOpportunity)}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+  
+  {/* Systems of Innovation */}
+  {Array.isArray(currentState.systemsOfInnovation) && currentState.systemsOfInnovation.length > 0 && (
+    <div>
+      <h3 className="text-xl font-bold text-green-300 mb-4">Systems of Innovation</h3>
+      {currentState.systemsOfInnovation.map((sys: any, i: number) => (
+        <div key={i} className="bg-green-900/30 p-5 rounded-lg mb-4 border border-green-500/30">
+          <h4 className="font-bold text-white text-lg mb-2">{toString(sys.name, 'System')}</h4>
+          <p className="text-green-200 text-sm">{toString(sys.emergingCapability)}</p>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+<div className="bg-white/10 p-6 rounded-xl border border-white/20">
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-2xl font-bold text-white">Future State (Salesforce-Powered)</h2>
+    <button 
+      onClick={() => downloadSVG(generatePaceLayerDiagram(false), `${discoveryData.companyName.replace(/\s+/g, '-')}-future-state.svg`)}
+      className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center gap-2"
+    >
+      <Download size={16} />
+      Download Diagram
+    </button>
+  </div>
+  <p className="text-white mb-6">{toString(futureState.overview, 'Future state vision')}</p>
+  
+  {/* Platform Components First - Foundation */}
+  {futureState.platformComponents && (
+    <div className="mb-6 bg-cyan-900/30 p-5 rounded-lg border border-cyan-500/30">
+      <h3 className="text-xl font-bold text-cyan-300 mb-3">🏗️ Platform Foundation</h3>
+      <div className="grid grid-cols-2 gap-4 text-sm text-white">
+        <div className="bg-cyan-800/30 p-3 rounded">
+          <p className="text-cyan-200 font-semibold mb-1">Data Unification:</p>
+          <p>{toString(futureState.platformComponents?.dataUnification, 'N/A')}</p>
+        </div>
+        <div className="bg-cyan-800/30 p-3 rounded">
+          <p className="text-cyan-200 font-semibold mb-1">Integration:</p>
+          <p>{toString(futureState.platformComponents?.integration, 'N/A')}</p>
+        </div>
+        <div className="bg-cyan-800/30 p-3 rounded">
+          <p className="text-cyan-200 font-semibold mb-1">Analytics:</p>
+          <p>{toString(futureState.platformComponents?.analytics, 'N/A')}</p>
+        </div>
+        <div className="bg-cyan-800/30 p-3 rounded">
+          <p className="text-cyan-200 font-semibold mb-1">AI & Automation:</p>
+          <p>{toString(futureState.platformComponents?.aiAutomation, 'N/A')}</p>
+        </div>
+      </div>
+    </div>
+  )}
+  
+  {/* Systems of Record */}
+  {Array.isArray(futureState.systemsOfRecord) && futureState.systemsOfRecord.length > 0 && (
+    <div className="mb-6">
+      <h3 className="text-xl font-bold text-blue-300 mb-4">Systems of Record</h3>
+      {futureState.systemsOfRecord.map((sys: any, i: number) => (
+        <div key={i} className="bg-blue-900/30 p-5 rounded-lg mb-4 border border-blue-500/30">
+          <div className="flex justify-between items-start mb-3">
+            <div>
+              <h4 className="font-bold text-white text-xl">{toString(sys.name, 'System')}</h4>
+              {sys.vendor && (
+                <p className="text-blue-200 text-sm mt-1">Vendor: {toString(sys.vendor)}</p>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              {sys.maturityLevel && (
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-700 text-white">
+                  Maturity: {toString(sys.maturityLevel)}
+                </span>
+              )}
+              {sys.estimatedTimeline && (
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-700 text-white">
+                  ⏱️ {toString(sys.estimatedTimeline)}
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <p className="text-blue-200 mb-3">
+            <strong>Future Vision:</strong> {toString(sys.futureVision || sys.description)}
+          </p>
+          
+          {sys.improvements && (
+            <div className="bg-green-900/20 p-3 rounded border border-green-500/30 mb-3">
+              <p className="text-green-300 font-semibold mb-1">✨ Improvements:</p>
+              <p className="text-white text-sm">{toString(sys.improvements)}</p>
+            </div>
+          )}
+          
+          <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+            <div>
+              <span className="text-blue-300 font-semibold">Salesforce Products:</span>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {Array.isArray(sys.salesforceProducts) && sys.salesforceProducts.map((p: any, j: number) => (
+                  <span key={j} className="bg-blue-700 px-2 py-1 rounded text-white text-xs">
+                    {toString(p, 'Product')}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {sys.benefits && (
+            <div className="bg-emerald-900/20 p-3 rounded border border-emerald-500/30">
+              <p className="text-emerald-300 font-semibold mb-2">🎯 Key Benefits:</p>
+              <ul className="space-y-1">
+                {Array.isArray(sys.benefits) 
+                  ? sys.benefits.map((b: any, j: number) => (
+                      <li key={j} className="text-white text-sm flex items-start">
+                        <span className="text-emerald-400 mr-2">✓</span>
+                        {toString(b)}
+                      </li>
+                    ))
+                  : <li className="text-white text-sm">{toString(sys.benefits)}</li>
+                }
+              </ul>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )}
+  
+  {/* Systems of Differentiation */}
+  {Array.isArray(futureState.systemsOfDifferentiation) && futureState.systemsOfDifferentiation.length > 0 && (
+    <div className="mb-6">
+      <h3 className="text-xl font-bold text-orange-300 mb-4">Systems of Differentiation</h3>
+      {futureState.systemsOfDifferentiation.map((sys: any, i: number) => (
+        <div key={i} className="bg-orange-900/30 p-5 rounded-lg mb-4 border border-orange-500/30">
+          <div className="flex justify-between items-start mb-3">
+            <h4 className="font-bold text-white text-lg">{toString(sys.name, 'System')}</h4>
+            {sys.estimatedTimeline && (
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-700 text-white">
+                ⏱️ {toString(sys.estimatedTimeline)}
+              </span>
+            )}
+          </div>
+          <p className="text-orange-200 text-sm mb-3">{toString(sys.futureVision)}</p>
+          
+          <div className="mb-3">
+            <span className="text-orange-300 font-semibold text-sm">Products:</span>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {Array.isArray(sys.salesforceProducts) && sys.salesforceProducts.map((p: any, j: number) => (
+                <span key={j} className="bg-orange-700 px-2 py-1 rounded text-white text-xs">
+                  {toString(p)}
+                </span>
+              ))}
+            </div>
+          </div>
+          
+          {sys.benefits && (
+            <div className="bg-emerald-900/20 p-3 rounded border border-emerald-500/30">
+              <p className="text-emerald-300 font-semibold mb-1 text-sm">🎯 Benefits:</p>
+              <ul className="space-y-1">
+                {Array.isArray(sys.benefits) 
+                  ? sys.benefits.map((b: any, j: number) => (
+                      <li key={j} className="text-white text-sm flex items-start">
+                        <span className="text-emerald-400 mr-2">✓</span>
+                        {toString(b)}
+                      </li>
+                    ))
+                  : <li className="text-white text-sm">{toString(sys.benefits)}</li>
+                }
+              </ul>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )}
+  
+  {/* Systems of Innovation */}
+  {Array.isArray(futureState.systemsOfInnovation) && futureState.systemsOfInnovation.length > 0 && (
+    <div>
+      <h3 className="text-xl font-bold text-green-300 mb-4">Systems of Innovation</h3>
+      {futureState.systemsOfInnovation.map((sys: any, i: number) => (
+        <div key={i} className="bg-green-900/30 p-5 rounded-lg mb-4 border border-green-500/30">
+          <div className="flex justify-between items-start mb-3">
+            <h4 className="font-bold text-white text-lg">{toString(sys.name, 'System')}</h4>
+            {sys.estimatedTimeline && (
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-700 text-white">
+                ⏱️ {toString(sys.estimatedTimeline)}
+              </span>
+            )}
+          </div>
+          <p className="text-green-200 text-sm mb-3">{toString(sys.futureVision)}</p>
+          
+          <div className="mb-3">
+            <span className="text-green-300 font-semibold text-sm">Products:</span>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {Array.isArray(sys.salesforceProducts) && sys.salesforceProducts.map((p: any, j: number) => (
+                <span key={j} className="bg-green-700 px-2 py-1 rounded text-white text-xs">
+                  {toString(p)}
+                </span>
+              ))}
+            </div>
+          </div>
+          
+          {sys.benefits && (
+            <div className="bg-emerald-900/20 p-3 rounded border border-emerald-500/30">
+              <p className="text-emerald-300 font-semibold mb-1 text-sm">🎯 Benefits:</p>
+              <ul className="space-y-1">
+                {Array.isArray(sys.benefits) 
+                  ? sys.benefits.map((b: any, j: number) => (
+                      <li key={j} className="text-white text-sm flex items-start">
+                        <span className="text-emerald-400 mr-2">✓</span>
+                        {toString(b)}
+                      </li>
+                    ))
+                  : <li className="text-white text-sm">{toString(sys.benefits)}</li>
+                }
+              </ul>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+
           </div>
         </div>
       </div>

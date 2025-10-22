@@ -10,6 +10,9 @@ export async function POST(request: NextRequest) {
    // Replace the prompt in your generate-artifacts route with this updated version
 // This includes maturity level assessment for each capability
 
+// Replace the prompt in your generate-artifacts route with this updated version
+// This includes maturity level assessment for each capability
+
 const systemPrompt = `You are an expert Salesforce Enterprise Architect analyzing discovery information.
 
 Based on the discovery data provided, generate comprehensive Salesforce architecture artifacts.
@@ -58,6 +61,8 @@ Generate a complete JSON response with these artifacts:
       {
         "name": "System name",
         "businessCapability": "What it enables",
+        "currentIssues": "Specific problems mentioned in discovery",
+        "integrationChallenges": "Integration pain points if mentioned",
         "salesforceOpportunity": "How Salesforce could help",
         "recommendedSalesforceProducts": ["Product1", "Product2"],
         "maturityLevel": "Repeatable"
@@ -65,9 +70,14 @@ Generate a complete JSON response with these artifacts:
     ],
     "systemsOfRecord": [
       {
-        "name": "System name",
+        "name": "System name - MUST BE ACTUAL SYSTEM FROM TECHNICAL LANDSCAPE",
+        "vendor": "Actual vendor if mentioned (SAP, Oracle, etc)",
         "businessCapability": "Core function",
-        "salesforceOpportunity": "How Salesforce could help",
+        "currentIssues": "Specific problems mentioned - be detailed",
+        "integrationChallenges": "Integration issues with other systems",
+        "userAdoption": "Adoption challenges if mentioned",
+        "dataQuality": "Data quality issues if mentioned",
+        "salesforceOpportunity": "How Salesforce could help address these specific issues",
         "recommendedSalesforceProducts": ["Product1"],
         "maturityLevel": "Managed"
       }
@@ -75,14 +85,43 @@ Generate a complete JSON response with these artifacts:
   },
   "futureStateArchitecture": {
     "overview": "Brief vision of future state",
-    "systemsOfInnovation": [...],
-    "systemsOfDifferentiation": [...],
-    "systemsOfRecord": [...],
+    "systemsOfInnovation": [
+      {
+        "name": "New innovation system name",
+        "futureVision": "What it will enable",
+        "salesforceProducts": ["Einstein AI", "Agentforce"],
+        "benefits": ["Benefit 1", "Benefit 2"],
+        "estimatedTimeline": "Phase 2 (Q3-Q4 2025)",
+        "maturityLevel": "Optimizing"
+      }
+    ],
+    "systemsOfDifferentiation": [
+      {
+        "name": "Enhanced system name",
+        "futureVision": "How it will differentiate the business",
+        "salesforceProducts": ["Product1", "Product2"],
+        "benefits": ["Benefit 1", "Benefit 2"],
+        "estimatedTimeline": "Phase 1 (Q1-Q2 2025)",
+        "maturityLevel": "Managed"
+      }
+    ],
+    "systemsOfRecord": [
+      {
+        "name": "MUST map to current state systems - show transformation",
+        "vendor": "Salesforce",
+        "futureVision": "How this system transforms with Salesforce",
+        "salesforceProducts": ["Sales Cloud", "Data Cloud"],
+        "improvements": "Specific improvements over current state issues",
+        "benefits": ["Benefit 1", "Benefit 2", "Benefit 3"],
+        "estimatedTimeline": "Phase 1 (Q1-Q2 2025)",
+        "maturityLevel": "Managed"
+      }
+    ],
     "platformComponents": {
       "dataUnification": "Data Cloud strategy",
-      "integration": "MuleSoft approach",
+      "integration": "MuleSoft approach - specifically addressing current Dell Boomi issues",
       "analytics": "Tableau/Einstein Analytics",
-      "aiAutomation": "Einstein AI/Agentforce"
+      "aiAutomation": "Einstein AI/Agentforce capabilities"
     }
   },
   "prioritizationMatrix": [
@@ -137,6 +176,8 @@ IMPORTANT RULES:
 9. Create exactly 3 phases in the roadmap
 10. Prioritization matrix should have 6-8 initiatives with varied value/effort combinations
 11. Return ONLY valid JSON, no markdown formatting or explanatory text`;
+
+// Use this prompt in your API call
 
 // Use this prompt in your API call
     // TEMPORARY DEBUG

@@ -252,23 +252,34 @@ const generateCapabilityMapSVG = () => {
   const capMap = artifacts.capabilityMap;
   const drivers = capMap.businessDrivers || [];
   
-  // Helper function to wrap text
-  const wrapText = (text: string, maxChars: number) => {
-    const words = text.split(' ');
-    const lines: string[] = [];
-    let currentLine = '';
-    
-    words.forEach(word => {
-      if ((currentLine + word).length <= maxChars) {
-        currentLine += (currentLine ? ' ' : '') + word;
-      } else {
-        if (currentLine) lines.push(currentLine);
-        currentLine = word;
-      }
-    });
-    if (currentLine) lines.push(currentLine);
-    return lines;
+  const escapeXml = (text: string): string => {
+    if (!text) return '';
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
   };
+  // Helper function to wrap text
+const wrapText = (text: string, maxChars: number): string[] => {
+  if (!text) return [''];
+  const escaped = escapeXml(text);  // ADD THIS LINE
+  const words = escaped.split(' ');  // USE escaped instead of text
+  const lines: string[] = [];
+  let currentLine = '';
+  
+  words.forEach((word: string) => {
+    if ((currentLine + word).length <= maxChars) {
+      currentLine += (currentLine ? ' ' : '') + word;
+    } else {
+      if (currentLine) lines.push(currentLine);
+      currentLine = word;
+    }
+  });
+  if (currentLine) lines.push(currentLine);
+  return lines;
+};
   
   // Calculate driver box dimensions and positions
   const driverBoxes = drivers.slice(0, 6).map((d: any) => {
@@ -281,9 +292,7 @@ const generateCapabilityMapSVG = () => {
   
   // Calculate total width and starting X position to center drivers
   const spacing = 20;
-  const totalWidth = driverBoxes.reduce((sum: number, box: DriverBox) => sum + box.width, 0) + (spacing * (driverBoxes.length - 1));
-  const startX = (1400 - totalWidth) / 2;
-  
+  const totalWidth = driverBoxes.reduce((sum: number, box: DriverBox) => sum + box.width, 0) + (spacing * (driverBoxes.length - 1));  const startX = (1400 - totalWidth) / 2;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="1400" height="1000" xmlns="http://www.w3.org/2000/svg">
   <rect width="1400" height="1000" fill="#f8f9fa"/>
@@ -292,7 +301,7 @@ const generateCapabilityMapSVG = () => {
     Salesforce Business Capability Map
   </text>
   <text x="700" y="80" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" fill="#666">
-    ${discoveryData.companyName} - ${discoveryData.industry}
+    ${escapeXml(discoveryData.companyName)} - ${escapeXml(discoveryData.industry)}
   </text>
   
   <text x="50" y="130" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#0176D3">
@@ -318,10 +327,12 @@ const generateCapabilityMapSVG = () => {
     { key: 'service', title: 'Service', x: 470, y: 230, color: '#2E844A' },
     { key: 'marketing', title: 'Marketing', x: 890, y: 230, color: '#8B46FF' },
     { key: 'commerce', title: 'Commerce', x: 50, y: 550, color: '#FF6B35' },
-    { key: 'platformData', title: 'Platform &amp; Data', x: 470, y: 550, color: '#00A1E0' },
+    { key: 'platformData', title: 'Platform and Data', x: 470, y: 550, color: '#00A1E0' },
     { key: 'industrySpecific', title: 'Industry-Specific', x: 890, y: 550, color: '#FFB75D' }
   ].map(cat => {
-    const caps = (capMap[cat.key] || []).slice(0, 4);
+    const caps = (capMap[cat.key] || [])
+    .filter((cap: any) => toString(cap.capability).trim().length > 0)
+    .slice(0, 4);
     return `
   <rect x="${cat.x}" y="${cat.y}" width="400" height="300" fill="${cat.color}" opacity="0.1" stroke="${cat.color}" stroke-width="2" rx="8"/>
   <text x="${cat.x + 10}" y="${cat.y + 30}" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="${cat.color}">
@@ -329,6 +340,7 @@ const generateCapabilityMapSVG = () => {
   </text>
   ${caps.map((cap: any, i: number) => {
     const capText = toString(cap.capability);
+    if (!capText || capText.trim().length === 0) return ''; // Skip empty capabilities
     const capLines = wrapText(capText, 40);
     const products = (cap.salesforceProducts || []).slice(0, 3).map((p: any) => toString(p)).join(', ');
     const productLines = wrapText(products, 45);
@@ -773,10 +785,22 @@ const generateCapabilityHeatMapSVG = () => {
     return level ? level.color : '#9e9e9e';
   };
   
+  // Helper function to escape XML special characters
+  const escapeXml = (text: string): string => {
+    if (!text) return '';
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  };
+  
   // Helper function to wrap text
   const wrapText = (text: string, maxChars: number): string[] => {
     if (!text) return [''];
-    const words = text.split(' ');
+    const escaped = escapeXml(text);
+    const words = escaped.split(' ');
     const lines: string[] = [];
     let currentLine = '';
     
@@ -812,10 +836,10 @@ const generateCapabilityHeatMapSVG = () => {
     return `
   <rect x="${x}" y="100" width="200" height="30" fill="${level.color}" opacity="0.9" rx="4"/>
   <text x="${x + 100}" y="118" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">
-    ${level.level}
+    ${escapeXml(level.level)}
   </text>
   <text x="${x + 100}" y="150" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#666">
-    ${level.description}
+    ${escapeXml(level.description)}
   </text>
     `;
   }).join('')}
@@ -828,7 +852,9 @@ const generateCapabilityHeatMapSVG = () => {
     { key: 'platformData', title: 'Platform and Data', x: 470, y: 510, color: '#00A1E0' },
     { key: 'industrySpecific', title: 'Industry-Specific', x: 890, y: 510, color: '#FFB75D' }
   ].map(cat => {
-    const caps = (capMap[cat.key] || []).slice(0, 4);
+    const caps = (capMap[cat.key] || [])
+    .filter((cap: any) => toString(cap.capability).trim().length > 0)
+    .slice(0, 4);
     return `
   <rect x="${cat.x}" y="${cat.y}" width="400" height="300" fill="${cat.color}" opacity="0.1" stroke="${cat.color}" stroke-width="2" rx="8"/>
   <text x="${cat.x + 10}" y="${cat.y + 30}" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="${cat.color}">
@@ -836,8 +862,10 @@ const generateCapabilityHeatMapSVG = () => {
   </text>
   ${caps.map((cap: any, i: number) => {
     const capText = toString(cap.capability);
+    if (!capText || capText.trim().length === 0) return ''; 
+
     const capLines = wrapText(capText, 35);
-    const maturity = toString(cap.maturityLevel || cap.maturity || 'Defined');
+    const maturity = escapeXml(toString(cap.maturityLevel || cap.maturity || 'Defined'));
     const maturityColor = getMaturityColor(maturity);
     
     return `
@@ -859,6 +887,224 @@ const generateCapabilityHeatMapSVG = () => {
   }).join('')}
   
   <text x="50" y="980" font-family="Arial, sans-serif" font-size="12" fill="#666">
+    Generated by Salesforce EA Discovery Assistant | ${new Date().toLocaleDateString()}
+  </text>
+</svg>`;
+};
+
+// Add this new function to your SalesforceEADiscovery.tsx component
+// This creates a prioritization matrix based on maturity vs business impact
+
+const generateMaturityImpactMatrix = () => {
+  if (!artifacts || !artifacts.capabilityMap) return '';
+  
+  const capMap = artifacts.capabilityMap;
+  
+  // Collect all capabilities with their maturity and impact
+  const allCapabilities: Array<{
+    name: string;
+    category: string;
+    maturity: string;
+    impact: string;
+    x: number;
+    y: number;
+    color: string;
+  }> = [];
+  
+  const categories = [
+    { key: 'sales', title: 'Sales', color: '#0176D3' },
+    { key: 'service', title: 'Service', color: '#2E844A' },
+    { key: 'marketing', title: 'Marketing', color: '#8B46FF' },
+    { key: 'commerce', title: 'Commerce', color: '#FF6B35' },
+    { key: 'platformData', title: 'Platform & Data', color: '#00A1E0' },
+    { key: 'industrySpecific', title: 'Industry', color: '#FFB75D' }
+  ];
+  
+  // Map maturity to X axis (1-5)
+  const maturityMap: { [key: string]: number } = {
+    'Initial': 1,
+    'Repeatable': 2,
+    'Defined': 3,
+    'Managed': 4,
+    'Optimizing': 5
+  };
+  
+  // Map impact to Y axis (1-3)
+  const impactMap: { [key: string]: number } = {
+    'Low': 1,
+    'Medium': 2,
+    'High': 3
+  };
+  
+  // Track positions to avoid overlaps
+  const usedPositions = new Map<string, number>();
+  
+  const getJitteredPosition = (x: number, y: number): { x: number, y: number } => {
+    const key = `${x},${y}`;
+    const count = usedPositions.get(key) || 0;
+    usedPositions.set(key, count + 1);
+    
+    // Apply jitter based on how many items already at this position
+    const jitterX = ((count % 4) - 1.5) * 30; // Spread horizontally
+    const jitterY = (Math.floor(count / 4) - 1) * 30; // Then vertically
+    
+    return { x: x + jitterX, y: y + jitterY };
+  };
+  
+  categories.forEach(cat => {
+    const caps = capMap[cat.key] || [];
+    caps.forEach((cap: any) => {
+      const maturity = toString(cap.maturityLevel || cap.maturity || 'Defined');
+      const impact = toString(cap.businessImpact || 'Medium');
+      const maturityScore = maturityMap[maturity] || 3;
+      const impactScore = impactMap[impact] || 2;
+      
+      // Convert to base pixel coordinates
+      const baseX = 200 + (maturityScore - 1) * 225; // Spread across 900px
+      const baseY = 650 - (impactScore - 1) * 200; // Inverted Y (high at top)
+      
+      // Apply jitter to avoid overlaps
+      const pos = getJitteredPosition(baseX, baseY);
+      
+      allCapabilities.push({
+        name: toString(cap.capability),
+        category: cat.title,
+        maturity,
+        impact,
+        x: pos.x,
+        y: pos.y,
+        color: cat.color
+      });
+    });
+  });
+  
+  // Helper to escape XML
+  const escapeXml = (text: string): string => {
+    if (!text) return '';
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  };
+  
+  // Helper to wrap text
+  const wrapText = (text: string, maxChars: number): string[] => {
+    if (!text) return [''];
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+    
+    words.forEach((word: string) => {
+      if ((currentLine + word).length <= maxChars) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+  
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1400" height="900" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1400" height="900" fill="#f8f9fa"/>
+  
+  <text x="700" y="50" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#1a1a1a">
+    Capability Prioritization Matrix
+  </text>
+  <text x="700" y="80" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" fill="#666">
+    Maturity vs Business Impact - ${escapeXml(discoveryData.companyName)}
+  </text>
+  
+  <!-- Quadrants -->
+  <rect x="200" y="250" width="450" height="200" fill="#fff9c4" opacity="0.3"/>
+  <rect x="650" y="250" width="450" height="200" fill="#a5d6a7" opacity="0.4"/>
+  <rect x="200" y="450" width="450" height="200" fill="#ffcdd2" opacity="0.3"/>
+  <rect x="650" y="450" width="450" height="200" fill="#fff9c4" opacity="0.3"/>
+  
+  <!-- Axes -->
+  <line x1="200" y1="250" x2="200" y2="650" stroke="#333" stroke-width="3"/>
+  <line x1="200" y1="650" x2="1100" y2="650" stroke="#333" stroke-width="3"/>
+  
+  <!-- Arrows -->
+  <polygon points="200,240 195,255 205,255" fill="#333"/>
+  <polygon points="1110,650 1095,645 1095,655" fill="#333"/>
+  
+  <!-- Axis Labels -->
+  <text x="100" y="450" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#333" transform="rotate(-90 100 450)">
+    Business Impact
+  </text>
+  <text x="170" y="280" font-family="Arial, sans-serif" font-size="13" fill="#666">High</text>
+  <text x="170" y="640" font-family="Arial, sans-serif" font-size="13" fill="#666">Low</text>
+  
+  <text x="650" y="690" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">
+    Maturity Level
+  </text>
+  <text x="220" y="670" font-family="Arial, sans-serif" font-size="13" fill="#666">Initial</text>
+  <text x="1060" y="670" font-family="Arial, sans-serif" font-size="13" fill="#666">Optimizing</text>
+  
+  <!-- Quadrant Labels -->
+  <text x="425" y="320" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#f57f17">
+    🎯 TOP PRIORITY
+  </text>
+  <text x="425" y="345" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">
+    High Impact, Low Maturity
+  </text>
+  
+  <text x="875" y="320" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#2e7d32">
+    💪 LEVERAGE
+  </text>
+  <text x="875" y="345" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">
+    High Impact, High Maturity
+  </text>
+  
+  <text x="425" y="520" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#c62828">
+    ⚠️ DEPRIORITIZE
+  </text>
+  <text x="425" y="545" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">
+    Low Impact, Low Maturity
+  </text>
+  
+  <text x="875" y="520" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#1976d2">
+    ✓ MAINTAIN
+  </text>
+  <text x="875" y="545" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">
+    Low Impact, High Maturity
+  </text>
+  
+  <!-- Plot capabilities -->
+  ${allCapabilities.map((cap, i) => {
+    const nameLines = wrapText(cap.name, 18);
+    return `
+  <circle cx="${cap.x}" cy="${cap.y}" r="20" fill="${cap.color}" opacity="0.8" stroke="white" stroke-width="2"/>
+  <text x="${cap.x}" y="${cap.y + 5}" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">
+    ${i + 1}
+  </text>
+    `;
+  }).join('')}
+  
+  <!-- Legend -->
+  <rect x="1130" y="150" width="250" height="${Math.min(allCapabilities.length * 22 + 60, 650)}" fill="white" stroke="#333" stroke-width="2" rx="8"/>
+  <text x="1255" y="180" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">
+    Capabilities
+  </text>
+  <line x1="1150" y1="195" x2="1360" y2="195" stroke="#333" stroke-width="1"/>
+  
+  ${allCapabilities.slice(0, 25).map((cap, i) => {
+    const yPos = 215 + (i * 22);
+    const nameShort = cap.name.length > 28 ? cap.name.substring(0, 28) + '...' : cap.name;
+    return `
+  <circle cx="1155" cy="${yPos}" r="8" fill="${cap.color}" opacity="0.8"/>
+  <text x="1170" y="${yPos + 4}" font-family="Arial, sans-serif" font-size="9" fill="#333">
+    ${i + 1}. ${escapeXml(nameShort)}
+  </text>
+    `;
+  }).join('')}
+  
+  <text x="50" y="880" font-family="Arial, sans-serif" font-size="12" fill="#666">
     Generated by Salesforce EA Discovery Assistant | ${new Date().toLocaleDateString()}
   </text>
 </svg>`;
@@ -1027,20 +1273,47 @@ const generateCapabilityHeatMapSVG = () => {
             <div className="bg-white/10 p-6 rounded-xl border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold text-white">Capability Map</h2>
-                <button 
-                  onClick={() => downloadSVG(generateCapabilityMapSVG(), `${discoveryData.companyName.replace(/\s+/g, '-')}-capability-map.svg`)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center gap-2"
-                >
-                  <Download size={16} />
-                  Download Diagram
-                </button>
-                <button 
-                  onClick={() => downloadSVG(generateCapabilityHeatMapSVG(), `${discoveryData.companyName.replace(/\s+/g, '-')}-capability-heatmap.svg`)}
-                  className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg flex items-center gap-2"
-                >
-                  <Download size={16} />
-                  Download Heat Map
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                      onClick={() => {
+                        const svg = generateCapabilityMapSVG();
+                        const lines = svg.split('\n');
+                        console.log('Line 238:', lines[237]); // 0-indexed
+                        console.log('Lines 235-240:', lines.slice(234, 240));
+                        downloadSVG(svg, `${discoveryData.companyName.replace(/\s+/g, '-')}-capability-map.svg`);
+                      }}                    
+className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center gap-2"
+                  >
+                    <Download size={16} />
+                    Download Diagram
+                  </button>
+                  <button 
+                    onClick={() => {
+                          console.log('Button clicked!');
+                          console.log('artifacts exists:', !!artifacts);
+                          console.log('capabilityMap exists:', !!artifacts?.capabilityMap);
+                      try {
+                            const svg = generateCapabilityHeatMapSVG();
+                            console.log('SVG generated, length:', svg?.length);
+                            console.log('SVG content:', svg);
+                            downloadSVG(svg, `${discoveryData.companyName.replace(/\s+/g, '-')}-capability-heatmap.svg`);
+                      } catch (error) {  
+                              console.error('Error generating heat map:', error);
+                      }
+                    }}
+                    className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg flex items-center gap-2"
+                  >
+                    <Download size={16} />
+                    Download Heat Map
+                  </button>
+                  <button 
+                    onClick={() => downloadSVG(generateMaturityImpactMatrix(), `${discoveryData.companyName.replace(/\s+/g, '-')}-maturity-impact-matrix.svg`)}
+                    className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg flex items-center gap-2"
+                  >
+                    <Download size={16} />
+                    Download Priority Matrix
+                  </button>
+                </div>
               </div>
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-blue-300 mb-3">Business Drivers</h3>

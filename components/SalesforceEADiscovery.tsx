@@ -356,19 +356,45 @@ const generateCapabilityMapSVG = () => {
 </svg>`;
 };
 
-  const generatePaceLayerDiagram = (isCurrentState: boolean) => {
-    if (!artifacts) return '';
+const generatePaceLayerDiagram = (isCurrentState: boolean) => {
+  if (!artifacts) return '';
+  
+  const title = isCurrentState ? 'Current State Architecture' : 'Future State Architecture';
+  const archData = isCurrentState ? artifacts.currentStateArchitecture : artifacts.futureStateArchitecture;
+  
+  if (!archData) return '';
+  
+  const soi = (archData.systemsOfInnovation || []).slice(0, 4);
+  const sod = (archData.systemsOfDifferentiation || []).slice(0, 4);
+  const sor = (archData.systemsOfRecord || []).slice(0, 4);
+  
+  // Helper function to wrap text
+  const wrapText = (text: string, maxChars: number): string[] => {
+    if (!text) return [''];
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
     
-    const title = isCurrentState ? 'Current State Architecture' : 'Future State Architecture';
-    const archData = isCurrentState ? artifacts.currentStateArchitecture : artifacts.futureStateArchitecture;
-    
-    if (!archData) return '';
-    
-    const soi = (archData.systemsOfInnovation || []).slice(0, 4);
-    const sod = (archData.systemsOfDifferentiation || []).slice(0, 4);
-    const sor = (archData.systemsOfRecord || []).slice(0, 4);
-    
-    return `<?xml version="1.0" encoding="UTF-8"?>
+    words.forEach((word: string) => {
+      if ((currentLine + word).length <= maxChars) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+  
+  interface System {
+    name?: string;
+    emergingCapability?: string;
+    futureVision?: string;
+    businessCapability?: string;
+  }
+  
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="1400" height="900" xmlns="http://www.w3.org/2000/svg">
   <rect width="1400" height="900" fill="#f8f9fa"/>
   
@@ -376,7 +402,7 @@ const generateCapabilityMapSVG = () => {
     ${title} - Pace Layered Architecture
   </text>
   <text x="700" y="80" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#666">
-    ${toString(archData.overview).substring(0, 100)}
+    ${wrapText(toString(archData.overview), 100)[0]}
   </text>
   
   <rect x="50" y="120" width="1300" height="220" fill="#4CAF50" opacity="0.2" stroke="#4CAF50" stroke-width="3" rx="10"/>
@@ -386,11 +412,21 @@ const generateCapabilityMapSVG = () => {
   <text x="70" y="175" font-family="Arial, sans-serif" font-size="13" fill="#555">
     Fast pace | Experimentation | 6-12 months lifecycle | ${soi.length} system(s)
   </text>
-  ${soi.map((sys: any, i: number) => `
-  <rect x="${70 + (i % 4) * 320}" y="${195 + Math.floor(i / 4) * 65}" width="300" height="60" fill="#4CAF50" stroke="#2E7D32" stroke-width="2" rx="5"/>
-  <text x="${80 + (i % 4) * 320}" y="${215 + Math.floor(i / 4) * 65}" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">${toString(sys.name).substring(0, 30)}</text>
-  <text x="${80 + (i % 4) * 320}" y="${233 + Math.floor(i / 4) * 65}" font-family="Arial, sans-serif" font-size="11" fill="#E8F5E9">${toString(isCurrentState ? sys.emergingCapability : sys.futureVision).substring(0, 35)}</text>
+  ${soi.map((sys: System, i: number) => {
+    const nameLines = wrapText(toString(sys.name), 28);
+    const detailText = toString(isCurrentState ? sys.emergingCapability : sys.futureVision);
+    const detailLines = wrapText(detailText, 32);
+    
+    return `
+  <rect x="${70 + (i % 4) * 320}" y="${195 + Math.floor(i / 4) * 75}" width="300" height="70" fill="#4CAF50" stroke="#2E7D32" stroke-width="2" rx="5"/>
+  ${nameLines.slice(0, 2).map((line: string, idx: number) => `
+  <text x="${80 + (i % 4) * 320}" y="${215 + Math.floor(i / 4) * 75 + (idx * 16)}" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">${line}</text>
   `).join('')}
+  ${detailLines.slice(0, 2).map((line: string, idx: number) => `
+  <text x="${80 + (i % 4) * 320}" y="${240 + Math.floor(i / 4) * 75 + (idx * 13)}" font-family="Arial, sans-serif" font-size="11" fill="#E8F5E9">${line}</text>
+  `).join('')}
+  `;
+  }).join('')}
   
   <rect x="50" y="360" width="1300" height="220" fill="#FF9800" opacity="0.2" stroke="#FF9800" stroke-width="3" rx="10"/>
   <text x="70" y="390" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#E65100">
@@ -399,11 +435,21 @@ const generateCapabilityMapSVG = () => {
   <text x="70" y="415" font-family="Arial, sans-serif" font-size="13" fill="#555">
     Medium pace | Competitive advantage | 1-3 years lifecycle | ${sod.length} system(s)
   </text>
-  ${sod.map((sys: any, i: number) => `
-  <rect x="${70 + (i % 4) * 320}" y="${435 + Math.floor(i / 4) * 65}" width="300" height="60" fill="#FF9800" stroke="#E65100" stroke-width="2" rx="5"/>
-  <text x="${80 + (i % 4) * 320}" y="${455 + Math.floor(i / 4) * 65}" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">${toString(sys.name).substring(0, 30)}</text>
-  <text x="${80 + (i % 4) * 320}" y="${473 + Math.floor(i / 4) * 65}" font-family="Arial, sans-serif" font-size="11" fill="#FFF3E0">${toString(sys.businessCapability || sys.futureVision).substring(0, 35)}</text>
+  ${sod.map((sys: System, i: number) => {
+    const nameLines = wrapText(toString(sys.name), 28);
+    const detailText = toString(sys.businessCapability || sys.futureVision);
+    const detailLines = wrapText(detailText, 32);
+    
+    return `
+  <rect x="${70 + (i % 4) * 320}" y="${435 + Math.floor(i / 4) * 75}" width="300" height="70" fill="#FF9800" stroke="#E65100" stroke-width="2" rx="5"/>
+  ${nameLines.slice(0, 2).map((line: string, idx: number) => `
+  <text x="${80 + (i % 4) * 320}" y="${455 + Math.floor(i / 4) * 75 + (idx * 16)}" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">${line}</text>
   `).join('')}
+  ${detailLines.slice(0, 2).map((line: string, idx: number) => `
+  <text x="${80 + (i % 4) * 320}" y="${480 + Math.floor(i / 4) * 75 + (idx * 13)}" font-family="Arial, sans-serif" font-size="11" fill="#FFF3E0">${line}</text>
+  `).join('')}
+  `;
+  }).join('')}
   
   <rect x="50" y="600" width="1300" height="220" fill="#2196F3" opacity="0.2" stroke="#2196F3" stroke-width="3" rx="10"/>
   <text x="70" y="630" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#0D47A1">
@@ -412,31 +458,74 @@ const generateCapabilityMapSVG = () => {
   <text x="70" y="655" font-family="Arial, sans-serif" font-size="13" fill="#555">
     Slow pace | Core operations | 3-10 years lifecycle | ${sor.length} system(s)
   </text>
-  ${sor.map((sys: any, i: number) => `
-  <rect x="${70 + (i % 4) * 320}" y="${675 + Math.floor(i / 4) * 65}" width="300" height="60" fill="#2196F3" stroke="#0D47A1" stroke-width="2" rx="5"/>
-  <text x="${80 + (i % 4) * 320}" y="${695 + Math.floor(i / 4) * 65}" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">${toString(sys.name).substring(0, 30)}</text>
-  <text x="${80 + (i % 4) * 320}" y="${713 + Math.floor(i / 4) * 65}" font-family="Arial, sans-serif" font-size="11" fill="#E3F2FD">${toString(sys.businessCapability || sys.futureVision).substring(0, 35)}</text>
+  ${sor.map((sys: System, i: number) => {
+    const nameLines = wrapText(toString(sys.name), 28);
+    const detailText = toString(sys.businessCapability || sys.futureVision);
+    const detailLines = wrapText(detailText, 32);
+    
+    return `
+  <rect x="${70 + (i % 4) * 320}" y="${675 + Math.floor(i / 4) * 75}" width="300" height="70" fill="#2196F3" stroke="#0D47A1" stroke-width="2" rx="5"/>
+  ${nameLines.slice(0, 2).map((line: string, idx: number) => `
+  <text x="${80 + (i % 4) * 320}" y="${695 + Math.floor(i / 4) * 75 + (idx * 16)}" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">${line}</text>
   `).join('')}
+  ${detailLines.slice(0, 2).map((line: string, idx: number) => `
+  <text x="${80 + (i % 4) * 320}" y="${720 + Math.floor(i / 4) * 75 + (idx * 13)}" font-family="Arial, sans-serif" font-size="11" fill="#E3F2FD">${line}</text>
+  `).join('')}
+  `;
+  }).join('')}
   
   <text x="50" y="870" font-family="Arial, sans-serif" font-size="12" fill="#666">
     Generated by Salesforce EA Discovery Assistant | ${discoveryData.companyName} | ${new Date().toLocaleDateString()}
   </text>
 </svg>`;
-  };
+};
 
-  const generatePrioritizationMatrix = () => {
-    if (!artifacts || !artifacts.prioritizationMatrix) return '';
-    
-    const matrix = artifacts.prioritizationMatrix || [];
-    
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="1200" height="900" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1200" height="900" fill="#f8f9fa"/>
+
+const generatePrioritizationMatrix = () => {
+  if (!artifacts || !artifacts.prioritizationMatrix) return '';
   
-  <text x="600" y="50" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#1a1a1a">
+  const matrix = artifacts.prioritizationMatrix || [];
+  
+  // More granular position mapping to spread items out
+  const valueMap: { [key: string]: number } = { 
+    'Low': 200, 
+    'Medium-Low': 400,
+    'Medium': 600, 
+    'Medium-High': 800,
+    'High': 1000 
+  };
+  
+  const effortMap: { [key: string]: number } = { 
+    'Low': 750, 
+    'Medium-Low': 625,
+    'Medium': 500, 
+    'Medium-High': 375,
+    'High': 250 
+  };
+  
+  // Track positions to avoid overlaps
+  const usedPositions = new Map<string, number>();
+  
+  const getJitteredPosition = (x: number, y: number): { x: number, y: number } => {
+    const key = `${x},${y}`;
+    const count = usedPositions.get(key) || 0;
+    usedPositions.set(key, count + 1);
+    
+    // Apply jitter based on how many items already at this position
+    const jitterX = (count % 3) * 40 - 40; // -40, 0, 40
+    const jitterY = Math.floor(count / 3) * 40 - 20; // Vertical offset for 4+ items
+    
+    return { x: x + jitterX, y: y + jitterY };
+  };
+  
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1600" height="900" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#f8f9fa"/>
+  
+  <text x="500" y="50" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#1a1a1a">
     Initiative Prioritization Matrix
   </text>
-  <text x="600" y="80" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#666">
+  <text x="500" y="80" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#666">
     ${discoveryData.companyName}
   </text>
   
@@ -476,27 +565,60 @@ const generateCapabilityMapSVG = () => {
   <text x="825" y="675" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">High Value, Low Effort</text>
   
   ${matrix.map((item: any, i: number) => {
-const valueMap: { [key: string]: number } = { 'Low': 250, 'Medium': 600, 'High': 950 };
-const effortMap: { [key: string]: number } = { 'Low': 750, 'Medium': 500, 'High': 250 };
-
-const x = valueMap[toString(item.businessValue)] || 600;
-const y = effortMap[toString(item.effort)] || 500;
-    
-    let color = '#666';
     const val = toString(item.businessValue);
     const eff = toString(item.effort);
     
+    // Get base position
+    let baseX = valueMap[val] || valueMap['Medium'] || 600;
+    let baseY = effortMap[eff] || effortMap['Medium'] || 500;
+    
+    // Apply jitter to avoid overlaps
+    const pos = getJitteredPosition(baseX, baseY);
+    const x = pos.x;
+    const y = pos.y;
+    
+    let color = '#666';
     if (val === 'High' && eff === 'Low') color = '#2e7d32';
     else if (val === 'Low' && eff === 'Low') color = '#558b2f';
     else if (val === 'High' && eff === 'High') color = '#f57f17';
     else if (val === 'Low' && eff === 'High') color = '#c62828';
-    else if (val === 'High') color = '#2e7d32';
-    else if (val === 'Medium') color = '#f57f17';
+    else if (val.includes('High')) color = '#2e7d32';
+    else if (val.includes('Medium')) color = '#f57f17';
     
     return `
-  <circle cx="${x}" cy="${y}" r="40" fill="${color}" opacity="0.9" stroke="#fff" stroke-width="3"/>
-  <text x="${x}" y="${y + 8}" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="white">${toString(item.priority)}</text>
-  <text x="${x}" y="${y - 50}" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#333">${toString(item.initiative).substring(0, 20)}</text>
+  <circle cx="${x}" cy="${y}" r="28" fill="${color}" opacity="0.9" stroke="#fff" stroke-width="3"/>
+  <text x="${x}" y="${y + 6}" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="white">${toString(item.priority)}</text>
+  `;
+  }).join('')}
+  
+  <!-- Legend/Table on the right -->
+  <rect x="1120" y="150" width="450" height="700" fill="white" stroke="#333" stroke-width="2" rx="8"/>
+  <text x="1345" y="180" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">
+    Initiatives
+  </text>
+  <line x1="1140" y1="195" x2="1550" y2="195" stroke="#333" stroke-width="1"/>
+  
+  ${matrix.map((item: any, i: number) => {
+    const val = toString(item.businessValue);
+    const eff = toString(item.effort);
+    
+    let color = '#666';
+    if (val === 'High' && eff === 'Low') color = '#2e7d32';
+    else if (val === 'Low' && eff === 'Low') color = '#558b2f';
+    else if (val === 'High' && eff === 'High') color = '#f57f17';
+    else if (val === 'Low' && eff === 'High') color = '#c62828';
+    else if (val.includes('High')) color = '#2e7d32';
+    else if (val.includes('Medium')) color = '#f57f17';
+    
+    const initiativeName = toString(item.initiative);
+    const truncatedName = initiativeName.length > 35 ? initiativeName.substring(0, 35) + '...' : initiativeName;
+    const yPos = 220 + (i * 70);
+    
+    return `
+  <circle cx="1160" cy="${yPos}" r="18" fill="${color}" opacity="0.9" stroke="#fff" stroke-width="2"/>
+  <text x="1160" y="${yPos + 5}" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">${toString(item.priority)}</text>
+  <text x="1190" y="${yPos - 5}" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#333">${truncatedName}</text>
+  <text x="1190" y="${yPos + 12}" font-family="Arial, sans-serif" font-size="11" fill="#666">Value: ${val} | Effort: ${eff}</text>
   `;
   }).join('')}
   
@@ -504,16 +626,48 @@ const y = effortMap[toString(item.effort)] || 500;
     Generated by Salesforce EA Discovery Assistant | ${new Date().toLocaleDateString()}
   </text>
 </svg>`;
-  };
+};
 
-  const generateRoadmapSVG = () => {
-    if (!artifacts || !artifacts.strategicRoadmap) return '';
+const generateRoadmapSVG = () => {
+  if (!artifacts || !artifacts.strategicRoadmap) return '';
+  
+  const roadmap = artifacts.strategicRoadmap || [];
+  
+  // Helper function to wrap text
+  const wrapText = (text: string, maxChars: number): string[] => {
+    if (!text) return [''];
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
     
-    const roadmap = artifacts.strategicRoadmap || [];
-    
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="1400" height="800" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1400" height="800" fill="#f8f9fa"/>
+    words.forEach((word: string) => {
+      if ((currentLine + word).length <= maxChars) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+  
+  interface Phase {
+    phase?: string;
+    initiatives?: any[];
+    outcomes?: any[];
+  }
+  
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1400" height="850" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0176D3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00A1E0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="1400" height="850" fill="#f8f9fa"/>
   
   <text x="700" y="50" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#1a1a1a">
     Strategic Roadmap
@@ -522,48 +676,193 @@ const y = effortMap[toString(item.effort)] || 500;
     ${discoveryData.companyName} - Salesforce Implementation Journey
   </text>
   
-  <line x1="100" y1="150" x2="1300" y2="150" stroke="#0176D3" stroke-width="4"/>
+  <!-- Chevron/Arrow Timeline -->
+  ${[0, 1, 2].map(i => {
+    const x = 100 + (i * 400);
+    return `
+  <polygon points="${x},120 ${x + 350},120 ${x + 400},150 ${x + 350},180 ${x},180 ${x + 50},150" 
+           fill="url(#arrowGradient)" opacity="0.8" stroke="#0176D3" stroke-width="2"/>
+  <circle cx="${x + 50}" cy="150" r="22" fill="#0176D3" stroke="white" stroke-width="3"/>
+  <text x="${x + 50}" y="157" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">${i + 1}</text>
+    `;
+  }).join('')}
   
-  ${roadmap.slice(0, 4).map((phase: any, i: number) => {
-    const x = 150 + (i * 300);
-    const initiatives = (phase.initiatives || []).slice(0, 4);
+  ${roadmap.slice(0, 3).map((phase: Phase, i: number) => {
+    const x = 50 + (i * 450);
+    const initiatives = (phase.initiatives || []).slice(0, 5);
     const outcomes = (phase.outcomes || []).slice(0, 4);
     
+    const phaseTitle = toString(phase.phase);
+    const phaseTitleLines = wrapText(phaseTitle, 30);
+    
     return `
-  <circle cx="${x}" cy="150" r="20" fill="#0176D3" stroke="#fff" stroke-width="3"/>
-  <text x="${x}" y="155" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">${i + 1}</text>
+  <rect x="${x}" y="220" width="400" height="550" fill="white" stroke="#0176D3" stroke-width="3" rx="12" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+  <rect x="${x}" y="220" width="400" height="${80 + (phaseTitleLines.length * 12)}" fill="#0176D3" rx="12"/>
   
-  <rect x="${x - 125}" y="200" width="250" height="500" fill="white" stroke="#0176D3" stroke-width="2" rx="8"/>
-  <rect x="${x - 125}" y="200" width="250" height="60" fill="#0176D3" rx="8"/>
-  <text x="${x}" y="235" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="white">
-    ${toString(phase.phase)}
-  </text>
-  
-  <text x="${x - 115}" y="290" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0176D3">
-    Initiatives:
-  </text>
-  ${initiatives.map((init: any, j: number) => `
-  <text x="${x - 115}" y="${310 + (j * 25)}" font-family="Arial, sans-serif" font-size="12" fill="#333">
-    • ${toString(init).substring(0, 30)}
+  ${phaseTitleLines.map((line: string, lineIdx: number) => `
+  <text x="${x + 200}" y="${260 + (lineIdx * 22)}" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="white">
+    ${line}
   </text>
   `).join('')}
   
-  <text x="${x - 115}" y="${430}" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2E844A">
-    Outcomes:
+  <text x="${x + 20}" y="${330 + (phaseTitleLines.length * 12)}" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#0176D3">
+    Key Initiatives:
   </text>
-  ${outcomes.map((out: any, j: number) => `
-  <text x="${x - 115}" y="${450 + (j * 25)}" font-family="Arial, sans-serif" font-size="12" fill="#333">
-    ✓ ${toString(out).substring(0, 30)}
+  ${initiatives.map((init: any, j: number) => {
+    const initText = toString(init);
+    const initLines = wrapText(initText, 38);
+    const yStart = 355 + (phaseTitleLines.length * 12) + (j * 50);
+    
+    return `
+  <circle cx="${x + 30}" cy="${yStart}" r="4" fill="#0176D3"/>
+  ${initLines.slice(0, 2).map((line: string, lineIdx: number) => `
+  <text x="${x + 40}" y="${yStart + 5 + (lineIdx * 14)}" font-family="Arial, sans-serif" font-size="12" fill="#333">
+    ${line}
   </text>
   `).join('')}
     `;
   }).join('')}
   
-  <text x="50" y="780" font-family="Arial, sans-serif" font-size="12" fill="#666">
+  <text x="${x + 20}" y="${580 + (phaseTitleLines.length * 12)}" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2E844A">
+    Expected Outcomes:
+  </text>
+  ${outcomes.map((out: any, j: number) => {
+    const outText = toString(out);
+    const outLines = wrapText(outText, 38);
+    const yStart = 605 + (phaseTitleLines.length * 12) + (j * 40);
+    
+    return `
+  <text x="${x + 30}" y="${yStart}" font-family="Arial, sans-serif" font-size="14" fill="#2E844A">✓</text>
+  ${outLines.slice(0, 2).map((line: string, lineIdx: number) => `
+  <text x="${x + 45}" y="${yStart + (lineIdx * 14)}" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    ${line}
+  </text>
+  `).join('')}
+    `;
+  }).join('')}
+    `;
+  }).join('')}
+  
+  <text x="50" y="820" font-family="Arial, sans-serif" font-size="12" fill="#666">
     Generated by Salesforce EA Discovery Assistant | ${new Date().toLocaleDateString()}
   </text>
 </svg>`;
+};
+
+// Add this new function to your SalesforceEADiscovery.tsx component
+// This generates a maturity heat map version of the capability map
+
+const generateCapabilityHeatMapSVG = () => {
+  if (!artifacts || !artifacts.capabilityMap) return '';
+  
+  const capMap = artifacts.capabilityMap;
+  const drivers = capMap.businessDrivers || [];
+  
+  // Maturity levels and their colors
+  const maturityLevels = [
+    { level: 'Initial', color: '#d32f2f', description: 'Ad-hoc, chaotic' },
+    { level: 'Repeatable', color: '#f57c00', description: 'Basic processes' },
+    { level: 'Defined', color: '#fbc02d', description: 'Standardized' },
+    { level: 'Managed', color: '#1976d2', description: 'Measured & controlled' },
+    { level: 'Optimizing', color: '#388e3c', description: 'Continuous improvement' }
+  ];
+  
+  // Helper to get maturity color
+  const getMaturityColor = (maturity: string) => {
+    const level = maturityLevels.find(l => l.level.toLowerCase() === maturity.toLowerCase());
+    return level ? level.color : '#9e9e9e';
   };
+  
+  // Helper function to wrap text
+  const wrapText = (text: string, maxChars: number): string[] => {
+    if (!text) return [''];
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+    
+    words.forEach((word: string) => {
+      if ((currentLine + word).length <= maxChars) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+  
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1400" height="1000" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1400" height="1000" fill="#f8f9fa"/>
+  
+  <text x="700" y="50" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#1a1a1a">
+    Capability Maturity Heat Map
+  </text>
+  <text x="700" y="80" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" fill="#666">
+    ${discoveryData.companyName} - ${discoveryData.industry}
+  </text>
+  
+  <!-- Maturity Scale Legend -->
+  <text x="50" y="115" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#333">
+    Maturity Scale:
+  </text>
+  ${maturityLevels.map((level, i) => {
+    const x = 180 + (i * 230);
+    return `
+  <rect x="${x}" y="100" width="200" height="30" fill="${level.color}" opacity="0.9" rx="4"/>
+  <text x="${x + 100}" y="118" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">
+    ${level.level}
+  </text>
+  <text x="${x + 100}" y="150" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#666">
+    ${level.description}
+  </text>
+    `;
+  }).join('')}
+  
+  ${[
+    { key: 'sales', title: 'Sales', x: 50, y: 190, color: '#0176D3' },
+    { key: 'service', title: 'Service', x: 470, y: 190, color: '#2E844A' },
+    { key: 'marketing', title: 'Marketing', x: 890, y: 190, color: '#8B46FF' },
+    { key: 'commerce', title: 'Commerce', x: 50, y: 510, color: '#FF6B35' },
+    { key: 'platformData', title: 'Platform and Data', x: 470, y: 510, color: '#00A1E0' },
+    { key: 'industrySpecific', title: 'Industry-Specific', x: 890, y: 510, color: '#FFB75D' }
+  ].map(cat => {
+    const caps = (capMap[cat.key] || []).slice(0, 4);
+    return `
+  <rect x="${cat.x}" y="${cat.y}" width="400" height="300" fill="${cat.color}" opacity="0.1" stroke="${cat.color}" stroke-width="2" rx="8"/>
+  <text x="${cat.x + 10}" y="${cat.y + 30}" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="${cat.color}">
+    ${cat.title}
+  </text>
+  ${caps.map((cap: any, i: number) => {
+    const capText = toString(cap.capability);
+    const capLines = wrapText(capText, 35);
+    const maturity = toString(cap.maturityLevel || cap.maturity || 'Defined');
+    const maturityColor = getMaturityColor(maturity);
+    
+    return `
+  <rect x="${cat.x + 10}" y="${cat.y + 50 + (i * 60)}" width="380" height="50" 
+        fill="${maturityColor}" opacity="0.85" stroke="${cat.color}" stroke-width="2" rx="4"/>
+  ${capLines.slice(0, 2).map((line: string, lineIdx: number) => `
+  <text x="${cat.x + 20}" y="${cat.y + 70 + (i * 60) + (lineIdx * 16)}" 
+        font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="white">
+    ${line}
+  </text>
+  `).join('')}
+  <text x="${cat.x + 370}" y="${cat.y + 95 + (i * 60)}" 
+        font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="end" fill="white">
+    ${maturity}
+  </text>
+  `;
+  }).join('')}
+    `;
+  }).join('')}
+  
+  <text x="50" y="980" font-family="Arial, sans-serif" font-size="12" fill="#666">
+    Generated by Salesforce EA Discovery Assistant | ${new Date().toLocaleDateString()}
+  </text>
+</svg>`;
+};
 
   const exportData = () => {
     try {
@@ -734,6 +1033,13 @@ const y = effortMap[toString(item.effort)] || 500;
                 >
                   <Download size={16} />
                   Download Diagram
+                </button>
+                <button 
+                  onClick={() => downloadSVG(generateCapabilityHeatMapSVG(), `${discoveryData.companyName.replace(/\s+/g, '-')}-capability-heatmap.svg`)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg flex items-center gap-2"
+                >
+                  <Download size={16} />
+                  Download Heat Map
                 </button>
               </div>
               <div className="mb-6">

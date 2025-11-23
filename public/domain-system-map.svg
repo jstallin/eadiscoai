@@ -1,0 +1,191 @@
+<svg width="1200" height="650" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect x="0" y="0" width="1200" height="650" fill="#ffffff" />
+
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold">
+    Hybrid Application Reference Architecture - Discrete Manufacturing
+  </text>
+
+  <!-- Business Layer label -->
+  <text x="60" y="90" font-family="Arial" font-size="14" font-weight="bold">Business Layer</text>
+  <!-- Business Layer box -->
+  <rect x="40" y="100" width="1120" height="80" fill="#f9fafb" stroke="#d1d5db"/>
+
+  <!-- Example Business capabilities -->
+  <text x="140" y="135" font-family="Arial" font-size="13" font-weight="bold">Sell &amp; Service</text>
+  <text x="140" y="155" font-family="Arial" font-size="12" fill="#555555">Lead-to-Order, Aftermarket Service</text>
+
+  <text x="430" y="135" font-family="Arial" font-size="13" font-weight="bold">Plan &amp; Produce</text>
+  <text x="430" y="155" font-family="Arial" font-size="12" fill="#555555">Demand, Production, Supply</text>
+
+  <text x="770" y="135" font-family="Arial" font-size="13" font-weight="bold">Record &amp; Report</text>
+  <text x="770" y="155" font-family="Arial" font-size="12" fill="#555555">Finance, Compliance, Analytics</text>
+
+  <!-- Application Layer label -->
+  <text x="60" y="210" font-family="Arial" font-size="14" font-weight="bold">Application Layer</text>
+  <!-- Application Layer box -->
+  <rect x="40" y="220" width="1120" height="260" fill="#ffffff" stroke="#d1d5db"/>
+
+  <!-- COLOR PALETTE (muted)
+       SaaS:    #d8ede3 / #4e7d6b
+       On-prem: #d8e2f0 / #4b6480
+       Custom:  #d6e8f2 / #3b6b8c
+       Integration: #edf0ff / #7b7fb8
+       Data:    #e4e7ec / #7b828c
+  -->
+
+  <!-- Left SaaS cluster: CRM / Service -->
+  <rect x="60" y="240" width="260" height="220" fill="#f3faf7" stroke="#cbd5d1"/>
+  <text x="190" y="260" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+    Customer &amp; Sales (SaaS)
+  </text>
+
+  <!-- SaaS CRM app -->
+  <rect x="80" y="280" width="220" height="60" rx="10" ry="10" fill="#d8ede3" stroke="#4e7d6b"/>
+  <text x="190" y="305" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold">
+    CRM (SaaS)
+  </text>
+  <text x="190" y="325" text-anchor="middle" font-family="Arial" font-size="11" fill="#333333">
+    Leads, Opportunities, Accounts
+  </text>
+
+  <!-- Customer Service SaaS -->
+  <rect x="80" y="360" width="220" height="60" rx="10" ry="10" fill="#d8ede3" stroke="#4e7d6b"/>
+  <text x="190" y="385" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold">
+    Service Management (SaaS)
+  </text>
+  <text x="190" y="405" text-anchor="middle" font-family="Arial" font-size="11" fill="#333333">
+    Cases, Work Orders, Installed Base
+  </text>
+
+  <!-- Central On-prem cluster: ERP / MES / TMS -->
+  <rect x="360" y="240" width="440" height="220" fill="#f4f7fb" stroke="#c9d4e4"/>
+  <text x="580" y="260" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+    Core Operations &amp; Finance (On-prem)
+  </text>
+
+  <!-- ERP -->
+  <rect x="380" y="280" width="200" height="60" rx="10" ry="10" fill="#d8e2f0" stroke="#4b6480"/>
+  <text x="480" y="305" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold">
+    ERP
+  </text>
+  <text x="480" y="325" text-anchor="middle" font-family="Arial" font-size="11" fill="#333333">
+    Orders, BOM, Routing, Finance
+  </text>
+
+  <!-- MES -->
+  <rect x="600" y="280" width="180" height="60" rx="10" ry="10" fill="#d8e2f0" stroke="#4b6480"/>
+  <text x="690" y="305" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold">
+    MES
+  </text>
+  <text x="690" y="325" text-anchor="middle" font-family="Arial" font-size="11" fill="#333333">
+    Work Centers, Operations, OEE
+  </text>
+
+  <!-- Custom TMS -->
+  <rect x="380" y="360" width="400" height="60" rx="10" ry="10" fill="#d6e8f2" stroke="#3b6b8c"/>
+  <text x="580" y="385" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold">
+    Custom TMS
+  </text>
+  <text x="580" y="405" text-anchor="middle" font-family="Arial" font-size="11" fill="#333333">
+    Route Planning, Carrier Mgmt, Freight Settlement
+  </text>
+
+  <!-- Right Data & Analytics cluster (Cloud) -->
+  <rect x="830" y="240" width="310" height="220" fill="#f4f6fb" stroke="#c9d4e4"/>
+  <text x="985" y="260" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+    Analytics &amp; Shared Data (Cloud)
+  </text>
+
+  <!-- Data warehouse (SaaS) -->
+  <rect x="850" y="280" width="270" height="60" rx="10" ry="10" fill="#e4e7ec" stroke="#7b828c"/>
+  <text x="985" y="305" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold">
+    Cloud Data Warehouse
+  </text>
+  <text x="985" y="325" text-anchor="middle" font-family="Arial" font-size="11" fill="#333333">
+    Orders, Production, Quality, Finance
+  </text>
+
+  <!-- BI / Dashboards -->
+  <rect x="850" y="360" width="270" height="60" rx="10" ry="10" fill="#d8ede3" stroke="#4e7d6b"/>
+  <text x="985" y="385" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold">
+    BI &amp; Dashboards
+  </text>
+  <text x="985" y="405" text-anchor="middle" font-family="Arial" font-size="11" fill="#333333">
+    Plant KPIs, Cost-to-Serve, OTIF
+  </text>
+
+  <!-- Integration & Data Layer label -->
+  <text x="60" y="505" font-family="Arial" font-size="14" font-weight="bold">Integration &amp; Data Layer</text>
+  <!-- Integration & Data Layer box -->
+  <rect x="40" y="515" width="1120" height="100" fill="#f9fafb" stroke="#d1d5db"/>
+
+  <!-- iPaaS / ESB -->
+  <rect x="120" y="535" width="260" height="60" rx="10" ry="10" fill="#edf0ff" stroke="#7b7fb8"/>
+  <text x="250" y="560" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold">
+    iPaaS / ESB
+  </text>
+  <text x="250" y="580" text-anchor="middle" font-family="Arial" font-size="11" fill="#333333">
+    APIs, Orchestration, Mapping, Monitoring
+  </text>
+
+  <!-- API Gateway -->
+  <rect x="470" y="535" width="210" height="60" rx="10" ry="10" fill="#edf0ff" stroke="#7b7fb8"/>
+  <text x="575" y="560" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold">
+    API Gateway
+  </text>
+  <text x="575" y="580" text-anchor="middle" font-family="Arial" font-size="11" fill="#333333">
+    External / Internal APIs, Security
+  </text>
+
+  <!-- MDM / Master Data -->
+  <rect x="730" y="535" width="360" height="60" rx="10" ry="10" fill="#e4e7ec" stroke="#7b828c"/>
+  <text x="910" y="560" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold">
+    Master Data Management
+  </text>
+  <text x="910" y="580" text-anchor="middle" font-family="Arial" font-size="11" fill="#333333">
+    Customers, Materials, Plants, Work Centers, Carriers
+  </text>
+
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,3 L0,6 z" fill="#4b5563" />
+    </marker>
+  </defs>
+
+  <!-- Arrows from CRM to iPaaS -->
+  <line x1="300" y1="310" x2="380" y2="310" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- CRM to DW via iPaaS (dashed) -->
+  <line x1="300" y1="310" x2="850" y2="310" stroke="#9ca3af" stroke-width="1" stroke-dasharray="5,5" marker-end="url(#arrow)"/>
+
+  <!-- ERP to iPaaS -->
+  <line x1="480" y1="340" x2="480" y2="535" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- MES to iPaaS -->
+  <line x1="690" y1="340" x2="690" y2="535" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- TMS to iPaaS -->
+  <line x1="580" y1="420" x2="580" y2="535" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- iPaaS to Data Warehouse -->
+  <line x1="380" y1="565" x2="850" y2="565" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Legend -->
+  <rect x="40" y="70" width="170" height="110" fill="#ffffff" stroke="#e5e7eb" />
+  <text x="55" y="90" font-family="Arial" font-size="12" font-weight="bold">Legend</text>
+
+  <rect x="55" y="100" width="18" height="12" fill="#d8ede3" stroke="#4e7d6b"/>
+  <text x="80" y="110" font-family="Arial" font-size="10">SaaS</text>
+
+  <rect x="55" y="118" width="18" height="12" fill="#d8e2f0" stroke="#4b6480"/>
+  <text x="80" y="128" font-family="Arial" font-size="10">On-prem / Legacy</text>
+
+  <rect x="55" y="136" width="18" height="12" fill="#d6e8f2" stroke="#3b6b8c"/>
+  <text x="80" y="146" font-family="Arial" font-size="10">Custom</text>
+
+  <rect x="55" y="154" width="18" height="12" fill="#edf0ff" stroke="#7b7fb8"/>
+  <text x="80" y="164" font-family="Arial" font-size="10">Integration / API</text>
+</svg>

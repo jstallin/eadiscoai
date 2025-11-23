@@ -178,8 +178,6 @@ IMPORTANT RULES:
 11. Return ONLY valid JSON, no markdown formatting or explanatory text`;
 
 // Use this prompt in your API call
-
-// Use this prompt in your API call
     // TEMPORARY DEBUG
   console.log('=== ENV DEBUG ===');
   console.log('API Key exists:', !!process.env.ANTHROPIC_API_KEY);

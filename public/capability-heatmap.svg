@@ -1,0 +1,143 @@
+<svg width="1100" height="600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect x="0" y="0" width="1100" height="600" fill="#ffffff" />
+
+  <!-- Title -->
+  <text x="550" y="40" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold">
+    Capability to System Heatmap
+  </text>
+  <text x="550" y="65" text-anchor="middle" font-family="Arial" font-size="14" fill="#555555">
+    Discrete Manufacturing - SaaS, On-prem, Custom, Retiring
+  </text>
+
+  <!-- Column headers (Capability Groups) -->
+  <text x="175" y="110" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold">
+    Customer &amp; Sales
+  </text>
+  <text x="550" y="110" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold">
+    Production &amp; Operations
+  </text>
+  <text x="925" y="110" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold">
+    Finance &amp; Reporting
+  </text>
+
+  <!-- Vertical separators -->
+  <line x1="350" y1="80" x2="350" y2="430" stroke="#e0e0e0" stroke-width="2"/>
+  <line x1="750" y1="80" x2="750" y2="430" stroke="#e0e0e0" stroke-width="2"/>
+
+  <!-- COLOR PALETTE (muted)
+       SaaS:    fill #d8ede3, stroke #4e7d6b (muted green)
+       On-prem: fill #d8e2f0, stroke #4b6480 (muted blue-grey)
+       Custom:  fill #d6e8f2, stroke #3b6b8c (soft teal-blue)
+       Retire:  fill #f2f2f2, stroke #a0a0a0
+  -->
+
+  <!-- CUSTOMER & SALES CAPABILITIES COLUMN (x center ~175) -->
+
+  <!-- Lead Management (SaaS CRM) -->
+  <rect x="75" y="140" width="200" height="60" rx="8" ry="8" fill="#d8ede3" stroke="#4e7d6b"/>
+  <text x="175" y="165" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+    Lead Management
+  </text>
+  <text x="175" y="185" text-anchor="middle" font-family="Arial" font-size="12" fill="#333333">
+    SaaS CRM
+  </text>
+
+  <!-- Opportunity Management (SaaS CRM) -->
+  <rect x="75" y="220" width="200" height="60" rx="8" ry="8" fill="#d8ede3" stroke="#4e7d6b"/>
+  <text x="175" y="245" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+    Opportunity Mgmt
+  </text>
+  <text x="175" y="265" text-anchor="middle" font-family="Arial" font-size="12" fill="#333333">
+    SaaS CRM
+  </text>
+
+  <!-- Installed Base & Service Contracts (Custom Portal) -->
+  <rect x="75" y="300" width="200" height="60" rx="8" ry="8" fill="#d6e8f2" stroke="#3b6b8c"/>
+  <text x="175" y="325" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+    Installed Base &amp; Contracts
+  </text>
+  <text x="175" y="345" text-anchor="middle" font-family="Arial" font-size="12" fill="#333333">
+    Custom Dealer Portal
+  </text>
+
+  <!-- PRODUCTION & OPERATIONS COLUMN (x center ~550) -->
+
+  <!-- Production Planning (On-prem APS) -->
+  <rect x="450" y="140" width="200" height="60" rx="8" ry="8" fill="#d8e2f0" stroke="#4b6480"/>
+  <text x="550" y="165" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+    Production Planning
+  </text>
+  <text x="550" y="185" text-anchor="middle" font-family="Arial" font-size="12" fill="#333333">
+    APS / ERP (On-prem)
+  </text>
+
+  <!-- Shop Floor Execution (On-prem MES) -->
+  <rect x="450" y="220" width="200" height="60" rx="8" ry="8" fill="#d8e2f0" stroke="#4b6480"/>
+  <text x="550" y="245" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+    Shop Floor Execution
+  </text>
+  <text x="550" y="265" text-anchor="middle" font-family="Arial" font-size="12" fill="#333333">
+    MES (On-prem)
+  </text>
+
+  <!-- Logistics &amp; Transportation (Custom TMS) -->
+  <rect x="450" y="300" width="200" height="60" rx="8" ry="8" fill="#d6e8f2" stroke="#3b6b8c"/>
+  <text x="550" y="325" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+    Logistics &amp; Transportation
+  </text>
+  <text x="550" y="345" text-anchor="middle" font-family="Arial" font-size="12" fill="#333333">
+    Custom TMS
+  </text>
+
+  <!-- FINANCE & REPORTING COLUMN (x center ~925) -->
+
+  <!-- Product Costing &amp; GL (ERP On-prem) -->
+  <rect x="825" y="140" width="200" height="60" rx="8" ry="8" fill="#d8e2f0" stroke="#4b6480"/>
+  <text x="925" y="165" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+    Product Costing &amp; GL
+  </text>
+  <text x="925" y="185" text-anchor="middle" font-family="Arial" font-size="12" fill="#333333">
+    ERP Core Finance
+  </text>
+
+  <!-- Management Reporting (Cloud DW &amp; BI) -->
+  <rect x="825" y="220" width="200" height="60" rx="8" ry="8" fill="#d8ede3" stroke="#4e7d6b"/>
+  <text x="925" y="245" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+    Management Reporting
+  </text>
+  <text x="925" y="265" text-anchor="middle" font-family="Arial" font-size="12" fill="#333333">
+    Cloud DW &amp; BI (SaaS)
+  </text>
+
+  <!-- Legacy AR / Collections (Retiring) -->
+  <rect x="825" y="300" width="200" height="60" rx="8" ry="8" fill="#f2f2f2" stroke="#a0a0a0" stroke-dasharray="6,4"/>
+  <text x="925" y="325" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+    AR &amp; Collections
+  </text>
+  <text x="925" y="345" text-anchor="middle" font-family="Arial" font-size="12" fill="#555555">
+    Legacy App (Retire)
+  </text>
+
+  <!-- LEGEND -->
+  <rect x="80" y="460" width="940" height="110" fill="#f9f9f9" stroke="#dddddd" />
+  <text x="100" y="485" font-family="Arial" font-size="14" font-weight="bold">
+    Legend
+  </text>
+
+  <!-- SaaS -->
+  <rect x="100" y="500" width="30" height="18" fill="#d8ede3" stroke="#4e7d6b"/>
+  <text x="140" y="514" font-family="Arial" font-size="12">SaaS Application</text>
+
+  <!-- On-prem -->
+  <rect x="320" y="500" width="30" height="18" fill="#d8e2f0" stroke="#4b6480"/>
+  <text x="360" y="514" font-family="Arial" font-size="12">On-prem / Legacy Application</text>
+
+  <!-- Custom -->
+  <rect x="600" y="500" width="30" height="18" fill="#d6e8f2" stroke="#3b6b8c"/>
+  <text x="640" y="514" font-family="Arial" font-size="12">Custom / In-house Solution</text>
+
+  <!-- Retiring -->
+  <rect x="880" y="500" width="30" height="18" fill="#f2f2f2" stroke="#a0a0a0" stroke-dasharray="6,4"/>
+  <text x="920" y="514" font-family="Arial" font-size="12">Retiring / Decommission</text>
+</svg>

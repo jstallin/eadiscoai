@@ -1792,5 +1792,5 @@ className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex it
     );
   }
 
-  return <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-900 to-slate-900 p-8"><div className="max-w-6xl mx-auto text-white">Loading artifacts...</div></div>;
+  return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-8"><div className="max-w-6xl mx-auto text-white">Loading artifacts...</div></div>;
 }

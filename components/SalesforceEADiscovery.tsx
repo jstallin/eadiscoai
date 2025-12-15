@@ -217,8 +217,85 @@ const combineText = (existing: string, newText: string): string => {
       }
 
       const data = await response.json()
-      
-      setArtifacts(data.artifacts)
+      console.log('generate-artifacts response:', data)
+
+      // If artifacts are missing or empty, attempt to recover from rawModelOutput
+      let finalArtifacts = data.artifacts;
+      const isEmptyArtifacts = !finalArtifacts || (typeof finalArtifacts === 'object' && Object.keys(finalArtifacts).length === 0);
+
+      if (isEmptyArtifacts && data.rawModelOutput) {
+        console.warn('Artifacts empty — attempting client-side parse of rawModelOutput')
+        const raw = String(data.rawModelOutput || '')
+        // Basic cleaning similar to server-side helper
+        let candidate = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        candidate = candidate.replace(/,\s*(?=[}\]])/g, ''); // remove trailing commas
+        candidate = candidate.replace(/'([^']*)'/g, '"$1"'); // single -> double quotes
+        candidate = candidate.replace(/([,{\n\s])(\w+)\s*:/g, '$1"$2":'); // quote keys
+        try {
+          finalArtifacts = JSON.parse(candidate)
+          showNotification('Recovered artifacts from raw model output', 'success')
+          console.log('Recovered artifacts:', finalArtifacts)
+        } catch (e) {
+          console.error('Client-side parsing failed', e)
+          showNotification('Could not parse model output — check server raw output in console', 'error')
+        }
+      }
+
+      // Normalize artifacts to the shape expected by the UI
+      const normalizeArtifacts = (a: any) => {
+        if (!a) return a;
+        const copy = { ...a };
+        const capMap = copy.capabilityMap || {};
+
+        // If server returned a flat `capabilities` array, convert to categorized arrays
+        if (Array.isArray(capMap.capabilities) && (!capMap.sales || !capMap.service)) {
+          const categorized: Record<string, any[]> = {
+            sales: [],
+            service: [],
+            marketing: [],
+            commerce: [],
+            platformData: [],
+            industrySpecific: []
+          };
+
+          capMap.capabilities.forEach((cap: any) => {
+            const name = cap.name || cap.capability || cap.title || '';
+            const category = String(cap.category || '').toLowerCase();
+            const normalized = {
+              capability: name,
+              description: cap.description || cap.notes || '',
+              maturityLevel: cap.maturityLevel || cap.maturity || cap.level || '',
+              businessImpact: cap.businessImpact || '',
+              salesforceProducts: cap.recommendedSalesforceProducts || cap.salesforceProducts || [],
+              ...cap
+            };
+
+            if (category.includes('sale')) categorized.sales.push(normalized);
+            else if (category.includes('service')) categorized.service.push(normalized);
+            else if (category.includes('market')) categorized.marketing.push(normalized);
+            else if (category.includes('commerce')) categorized.commerce.push(normalized);
+            else if (category.includes('data') || category.includes('platform')) categorized.platformData.push(normalized);
+            else if (category.includes('manufactur') || category.includes('supply') || category.includes('industry')) categorized.industrySpecific.push(normalized);
+            else categorized.industrySpecific.push(normalized);
+          });
+
+          // Merge categorized arrays into capabilityMap while preserving any existing keys
+          copy.capabilityMap = {
+            ...capMap,
+            sales: capMap.sales && capMap.sales.length ? capMap.sales : categorized.sales,
+            service: capMap.service && capMap.service.length ? capMap.service : categorized.service,
+            marketing: capMap.marketing && capMap.marketing.length ? capMap.marketing : categorized.marketing,
+            commerce: capMap.commerce && capMap.commerce.length ? capMap.commerce : categorized.commerce,
+            platformData: capMap.platformData && capMap.platformData.length ? capMap.platformData : categorized.platformData,
+            industrySpecific: capMap.industrySpecific && capMap.industrySpecific.length ? capMap.industrySpecific : categorized.industrySpecific,
+          };
+        }
+
+        return copy;
+      };
+
+      const normalizedArtifacts = normalizeArtifacts(finalArtifacts);
+      setArtifacts(normalizedArtifacts)
       
       setTimeout(() => {
         saveEngagement()
@@ -675,7 +752,126 @@ const generatePrioritizationMatrix = () => {
 </svg>`;
 };
 
-
+const generateRoadmapSVG = () => {
+  if (!artifacts || !artifacts.strategicRoadmap) return '';
+  
+  const roadmap = artifacts.strategicRoadmap || [];
+  
+  // Helper function to wrap text
+  const wrapText = (text: string, maxChars: number): string[] => {
+    if (!text) return [''];
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+    
+    words.forEach((word: string) => {
+      if ((currentLine + word).length <= maxChars) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+  
+  interface Phase {
+    phase?: string;
+    initiatives?: any[];
+    outcomes?: any[];
+  }
+  
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1400" height="850" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0176D3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00A1E0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="1400" height="850" fill="#f8f9fa"/>
+  
+  <text x="700" y="50" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#1a1a1a">
+    Strategic Roadmap
+  </text>
+  <text x="700" y="80" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" fill="#666">
+    ${discoveryData.companyName} - Salesforce Implementation Journey
+  </text>
+  
+  <!-- Chevron/Arrow Timeline -->
+  ${[0, 1, 2].map(i => {
+    const x = 100 + (i * 400);
+    return `
+  <polygon points="${x},120 ${x + 350},120 ${x + 400},150 ${x + 350},180 ${x},180 ${x + 50},150" 
+           fill="url(#arrowGradient)" opacity="0.8" stroke="#0176D3" stroke-width="2"/>
+  <circle cx="${x + 50}" cy="150" r="22" fill="#0176D3" stroke="white" stroke-width="3"/>
+  <text x="${x + 50}" y="157" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">${i + 1}</text>
+    `;
+  }).join('')}
+  
+  ${roadmap.slice(0, 3).map((phase: Phase, i: number) => {
+    const x = 50 + (i * 450);
+    const initiatives = (phase.initiatives || []).slice(0, 5);
+    const outcomes = (phase.outcomes || []).slice(0, 4);
+    
+    const phaseTitle = toString(phase.phase);
+    const phaseTitleLines = wrapText(phaseTitle, 30);
+    
+    return `
+  <rect x="${x}" y="220" width="400" height="550" fill="white" stroke="#0176D3" stroke-width="3" rx="12" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+  <rect x="${x}" y="220" width="400" height="${80 + (phaseTitleLines.length * 12)}" fill="#0176D3" rx="12"/>
+  
+  ${phaseTitleLines.map((line: string, lineIdx: number) => `
+  <text x="${x + 200}" y="${260 + (lineIdx * 22)}" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="white">
+    ${line}
+  </text>
+  `).join('')}
+  
+  <text x="${x + 20}" y="${330 + (phaseTitleLines.length * 12)}" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#0176D3">
+    Key Initiatives:
+  </text>
+  ${initiatives.map((init: any, j: number) => {
+    const initText = toString(init);
+    const initLines = wrapText(initText, 38);
+    const yStart = 355 + (phaseTitleLines.length * 12) + (j * 50);
+    
+    return `
+  <circle cx="${x + 30}" cy="${yStart}" r="4" fill="#0176D3"/>
+  ${initLines.slice(0, 2).map((line: string, lineIdx: number) => `
+  <text x="${x + 40}" y="${yStart + 5 + (lineIdx * 14)}" font-family="Arial, sans-serif" font-size="12" fill="#333">
+    ${line}
+  </text>
+  `).join('')}
+    `;
+  }).join('')}
+  
+  <text x="${x + 20}" y="${580 + (phaseTitleLines.length * 12)}" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2E844A">
+    Expected Outcomes:
+  </text>
+  ${outcomes.map((out: any, j: number) => {
+    const outText = toString(out);
+    const outLines = wrapText(outText, 38);
+    const yStart = 605 + (phaseTitleLines.length * 12) + (j * 40);
+    
+    return `
+  <text x="${x + 30}" y="${yStart}" font-family="Arial, sans-serif" font-size="14" fill="#2E844A">✓</text>
+  ${outLines.slice(0, 2).map((line: string, lineIdx: number) => `
+  <text x="${x + 45}" y="${yStart + (lineIdx * 14)}" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    ${line}
+  </text>
+  `).join('')}
+    `;
+  }).join('')}
+    `;
+  }).join('')}
+  
+  <text x="50" y="820" font-family="Arial, sans-serif" font-size="12" fill="#666">
+    Generated by Salesforce EA Discovery Assistant | ${new Date().toLocaleDateString()}
+  </text>
+</svg>`;
+};
 
 // FULLY FIXED: Generate Capability Heatmap SVG
 const generateCapabilityHeatmap = () => {
@@ -1259,6 +1455,42 @@ className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex it
                     ))}
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div className="bg-white/10 p-6 rounded-xl border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-white">Strategic Roadmap</h2>
+                <button 
+                  onClick={() => downloadSVG(generateRoadmapSVG(), `${discoveryData.companyName.replace(/\s+/g, '-')}-roadmap.svg`)}
+                  className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg flex items-center gap-2"
+                >
+                  <Download size={16} />
+                  Download Roadmap
+                </button>
+              </div>
+              <div className="space-y-4">
+                {Array.isArray(artifacts.strategicRoadmap) && artifacts.strategicRoadmap.map((phase, i) => (
+                  <div key={i} className="bg-blue-900/50 p-4 rounded-lg text-white">
+                    <h3 className="font-bold text-lg mb-3">{toString(phase.phase)}</h3>
+                    <div className="mb-2">
+                      <strong className="text-blue-200">Initiatives:</strong>
+                      <ul className="mt-1 ml-4 list-disc space-y-1">
+                        {Array.isArray(phase.initiatives) && phase.initiatives.map((init: any, j: number) => (
+                          <li key={j}>{toString(init)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <strong className="text-green-200">Expected Outcomes:</strong>
+                      <ul className="mt-1 ml-4 list-disc space-y-1">
+                        {Array.isArray(phase.outcomes) && phase.outcomes.map((out: any, j: number) => (
+                          <li key={j}>{toString(out)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 

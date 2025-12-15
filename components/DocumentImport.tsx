@@ -146,7 +146,9 @@ const analyzeDocuments = async () => {
     const data = await response.json();
     
     if (data.error) {
-      throw new Error(data.error);
+      // Surface server-provided error messages (including rate-limit info)
+      const serverMessage = data.error + (data.headers ? `\nServer headers: ${JSON.stringify(data.headers)}` : '');
+      throw new Error(serverMessage);
     }
 
     const extractedData = data.extractedData;
@@ -169,7 +171,9 @@ const analyzeDocuments = async () => {
         ? { ...f, status: 'error', error: 'Analysis failed' } 
         : f
     ));
-    alert('Failed to analyze documents. Please try again or enter information manually.');
+    // Show a more descriptive message to the user when available
+    const msg = error instanceof Error ? error.message : String(error);
+    alert(`Failed to analyze documents: ${msg}\nPlease try again or enter information manually.`);
   } finally {
     setIsAnalyzing(false);
   }
